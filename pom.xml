@@ -17,12 +17,16 @@
     <groupId>org.example</groupId>
     <artifactId>spring-webflux-reactive-cache</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <name>rs</name>
+    <description>Concept proof of Mongo Replicaset</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <groovy.version>4.0.1</groovy.version>
-        <reactor.version>3.4.5</reactor.version>
+        <testcontainers.version>1.16.2</testcontainers.version>
+        <rest-assured.version>4.3.0</rest-assured.version>
+        <groovy.version>3.0.2</groovy.version>
+        <junit-jupiter.version>5.8.2</junit-jupiter.version>
     </properties>
 
     <dependencyManagement>

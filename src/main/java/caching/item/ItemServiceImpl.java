@@ -1,33 +1,45 @@
-package caching;
+package caching.item;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
-@Service
-public class ItemService {
+@Service("itemService")
+@RequiredArgsConstructor
+public class ItemServiceImpl implements ItemService {
 
-    private final ItemRepository repository;
+    private final ItemDAOCrud itemDAOCrud;
 //    private final LoadingCache<String, Object> cache;
 
-    public ItemService(ItemRepository repository) {
-        this.repository = repository;
+//    public ItemServiceImpl(ItemDAO dao) {
+//        this.repository = dao;
 //        this.cache = Caffeine.newBuilder()                .build(this::getItem_withAddons);
-    }
+//    }
 
+    @Override
     @Cacheable("items")
     public Mono<Item> getItem(String id) {
-        return repository.findById(id);
+        return itemDAOCrud.findById(id);
     }
 
+    @Override
     public Mono<Item> save(Item item) {
-        return repository.save(item);
+        return itemDAOCrud.save(item);
     }
 
+    @Override
+    public Flux<Item> getAll() {
+
+        return itemDAOCrud.findAll();
+    }
+
+    @Override
     @Cacheable("items")
     public Mono<Item> getItem_withCache(String id) {
-        return repository.findById(id).cache();
+        return itemDAOCrud.findById(id).cache();
     }
 
 //    @Cacheable("items")

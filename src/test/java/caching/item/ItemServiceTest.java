@@ -1,4 +1,4 @@
-package caching;
+package caching.item;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,6 @@ import reactor.core.publisher.Mono;
 @SpringBootTest
 @ActiveProfiles("cache")
 public class ItemServiceTest {
-
 
   @Autowired
   ItemService itemService;

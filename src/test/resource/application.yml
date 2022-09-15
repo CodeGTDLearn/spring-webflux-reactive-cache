@@ -1,0 +1,6 @@
+spring:
+  profiles:
+    active: cache-test
+
+    group:
+      cache-test: log, test-singlenode
