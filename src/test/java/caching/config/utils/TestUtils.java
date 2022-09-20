@@ -9,8 +9,6 @@ import org.testcontainers.containers.MongoDBContainer;
 
 import static caching.config.utils.RestAssureSpecs.requestSpecs;
 import static caching.config.utils.RestAssureSpecs.responseSpecs;
-import static com.mongo.rs.core.utils.RestAssureSpecs.requestSpecs;
-import static com.mongo.rs.core.utils.RestAssureSpecs.responseSpecs;
 
 @Slf4j
 public class TestUtils {
@@ -46,20 +44,11 @@ public class TestUtils {
     String title;
 
     switch (testType.toLowerCase()) {
-      case "class-start":
-        title = " STARTING TEST-CLASS...";
-        break;
-      case "class-end":
-        title = "...FINISHED TEST-CLASS ";
-        break;
-      case "method-start":
-        title = "STARTING TEST-METHOD...";
-        break;
-      case "method-end":
-        title = "...FINISHED TEST-METHOD";
-        break;
-      default:
-        title = "";
+      case "class-start" -> title = " STARTING TEST-CLASS...";
+      case "class-end" -> title = "...FINISHED TEST-CLASS ";
+      case "method-start" -> title = "STARTING TEST-METHOD...";
+      case "method-end" -> title = "...FINISHED TEST-METHOD";
+      default -> title = "";
     }
 
 
@@ -71,7 +60,7 @@ public class TestUtils {
               "╚════════════════════════════════════════════════════════════════════╝\n"
          ,
          title, subTitle, "║"
-                     );
+    );
   }
 
 
@@ -80,17 +69,10 @@ public class TestUtils {
     if (container != null) {
       String title;
       switch (typeTestMessage.toLowerCase()) {
-        case "container-start":
-          title = "STARTING TEST-CONTAINER...";
-          break;
-        case "container-end":
-          title = "...FINISHED TEST-CONTAINER";
-          break;
-        case "container-state":
-          title = "  ...TEST'S TC-CONTAINER  ";
-          break;
-        default:
-          title = "";
+        case "container-start" -> title = "STARTING TEST-CONTAINER...";
+        case "container-end" -> title = "...FINISHED TEST-CONTAINER";
+        case "container-state" -> title = "  ...TEST'S TC-CONTAINER  ";
+        default -> title = "";
       }
 
 
@@ -105,7 +87,7 @@ public class TestUtils {
            container.getContainerName(),
            container.getReplicaSetUrl(),
            container.isRunning()
-                       );
+      );
     }
   }
 
@@ -137,7 +119,7 @@ public class TestUtils {
            compose.getContainerByServiceName(service + "_1")
                   .get()
                   .isRunning()
-                       );
+      );
     }
   }
 

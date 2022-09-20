@@ -3,6 +3,7 @@ package caching.item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -21,7 +22,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Cacheable("items")
-    public Mono<Item> getItem(String id) {
+    public Mono<Item> getById(String id) {
         return itemDAOCrud.findById(id);
     }
 
@@ -41,6 +42,21 @@ public class ItemServiceImpl implements ItemService {
     public Mono<Item> getItem_withCache(String id) {
         return itemDAOCrud.findById(id).cache();
     }
+
+    @Override
+    @Transactional
+    public Mono<Item> update(Item item) {
+
+        return itemDAOCrud.save(item);
+    }
+
+    @Override
+    public Mono<Void> delete(String id) {
+
+        return itemDAOCrud.deleteById(id);
+    }
+
+
 
 //    @Cacheable("items")
 //    public Mono<Item> getItem_withAddons(String id) {

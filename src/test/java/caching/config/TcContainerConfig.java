@@ -4,7 +4,7 @@ import org.junit.jupiter.api.extension.Extension;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import static com.mongo.rs.core.utils.TestUtils.globalContainerMessage;
+import static caching.config.utils.TestUtils.globalContainerMessage;
 import static java.lang.System.setProperty;
 
 /*╔════════════════════════════════════════════════════════════╗

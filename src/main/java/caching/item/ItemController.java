@@ -29,11 +29,11 @@ public class ItemController {
          ;
   }
 
-  @GetMapping(GET_ITEM)
+  @GetMapping(GET_BY_ID)
   @ResponseStatus(OK)
   public Mono<Item> getItem(@RequestParam String id) {
 
-    return itemService.getItem(id);
+    return itemService.getById(id);
   }
 
   @Transactional

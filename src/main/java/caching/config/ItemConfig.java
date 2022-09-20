@@ -1,7 +1,6 @@
 package caching.config;
 
 
-import com.mongo.rs.core.YamlProcessor;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import lombok.Getter;

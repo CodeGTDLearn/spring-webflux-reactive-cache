@@ -14,21 +14,17 @@ import org.springframework.test.context.junit.jupiter.EnabledIf;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static caching.config.databuilders.ItemBuilder.itemNoID;
-import static caching.config.utils.RestAssureSpecs.requestSpecsSetPath;
-import static caching.config.utils.RestAssureSpecs.responseSpecs;
+import static caching.config.databuilders.ItemBuilder.itemWithoutID;
+import static caching.config.utils.RestAssureSpecs.*;
 import static caching.config.utils.TestUtils.*;
-import static caching.item.ItemRoutes.ROOT;
-import static caching.item.ItemRoutes.SAVE;
+import static caching.item.ItemRoutes.*;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_CLASS;
 
 /*   ╔═══════════════════════════════╗
@@ -92,7 +88,7 @@ public class ItemControllerTest {
   @Autowired
   ItemService itemService;
 
-  Item item1;
+  private Item item1, item2;
   private Item itemNoId;
 
   @BeforeAll
@@ -131,14 +127,12 @@ public class ItemControllerTest {
     globalTestMessage(testInfo.getTestMethod()
                               .toString(), "method-start");
 
-    item1 = itemNoID().create();
+    item1 = itemWithoutID().create();
+    item2 = itemWithoutID().create();
+    List<Item> itemList = asList(item1, item2);
+    Flux<Item> itemFlux = dbUtils.cleanDbAndSaveList(itemList);
 
-    Item user2 = itemNoID().create();
-
-    List<Item> itemList = asList(item1, user2);
-    Flux<Item> userFlux = dbUtils.cleanDbAndSaveList(itemList);
-
-    dbUtils.countAndExecuteFlux(userFlux, 2);
+    dbUtils.countAndExecuteFlux(itemFlux, 2);
 
   }
 
@@ -155,15 +149,15 @@ public class ItemControllerTest {
   @DisplayName("2 saveRollback")
   public void saveRollback() {
 
-    itemNoId = itemNoId().create();
-    Item lastUser = itemNoId().create();
-    lastUser.setName("");
-    List<Item> userList = asList(itemNoId, lastUser);
+    itemNoId = itemWithoutID().create();
+    Item lastItem = itemWithoutID().create();
+    lastItem.setName("");
+    List<Item> itemList = asList(itemNoId, lastItem);
 
     RestAssuredWebTestClient
          .given()
          .webTestClient(mockedWebClient)
-         .body(userList)
+         .body(itemList)
 
          .when()
          .post(SAVE)
@@ -186,14 +180,14 @@ public class ItemControllerTest {
   @DisplayName("1 NoRollback")
   public void saveNoRollback() {
 
-    itemNoId = itemNoId().create();
-    Item lastUser = itemNoId().create();
-    List<Item> userList = asList(itemNoId, lastUser);
+    itemNoId = itemWithoutID().create();
+    Item lastItem = itemWithoutID().create();
+    List<Item> itemList = asList(itemNoId, lastItem);
 
     RestAssuredWebTestClient
          .given()
          .webTestClient(mockedWebClient)
-         .body(userList)
+         .body(itemList)
 
          .when()
          .post(SAVE)
@@ -207,9 +201,9 @@ public class ItemControllerTest {
          .body("$", hasSize(2))
          .body("name", hasItems(
               itemNoId.getName(),
-              lastUser.getName()
+              lastItem.getName()
                                ))
-         .body(matchesJsonSchemaInClasspath("contracts/transaction.json"))
+//         .body(matchesJsonSchemaInClasspath("contracts/transaction.json"))
     ;
 
     dbUtils.countAndExecuteFlux(itemService.getAll(), 4);
@@ -223,7 +217,7 @@ public class ItemControllerTest {
   @DisplayName("3 saveWithID")
   public void saveWithID() {
 
-    Item userIsolated = itemNoID().create();
+    Item userIsolated = itemWithoutID().create();
 
     RestAssuredWebTestClient
          .given()
@@ -240,21 +234,106 @@ public class ItemControllerTest {
 
          .statusCode(CREATED.value())
          .body("name", equalTo(userIsolated.getName()))
-         .body(matchesJsonSchemaInClasspath("contracts/save.json"))
+//         .body(matchesJsonSchemaInClasspath("contracts/save.json"))
     ;
 
     dbUtils.countAndExecuteFlux(itemService.getAll(), 3);
   }
 
-  private String getTestProfiles(String[] profiles, String profile) {
+  @Test
+  @EnabledIf(expression = enabledTest, loadContext = true)
+  @DisplayName("2 FindAll")
+  public void getAll() {
 
-    final String valueOf = String.valueOf(Arrays.stream(profiles)
-                                                .anyMatch(str -> str.equals(profile)));
-    return valueOf;
-    //    final String valueOf = String.valueOf(Arrays.stream(profiles)
-    //                                          .filter(str -> str.equals(profile)));
-    //    return valueOf;
+    dbUtils.checkFluxListElements(itemService.getAll()
+                                             .flatMap(Flux::just), asList(item1, item2));
 
+    RestAssuredWebTestClient
+
+         .given()
+         .webTestClient(mockedWebClient)
+
+         .when()
+         .get(GET_ALL)
+
+         .then()
+         .log()
+         .everything()
+
+         .statusCode(OK.value())
+         .body("size()", is(2))
+         .body("$", hasSize(2))
+         .body("name", hasItems(item1.getName(), item1.getName()))
+         .body(matchesJsonSchemaInClasspath("contracts/getAll.json"));
+
+    dbUtils.countAndExecuteFlux(itemService.getAll(), 2);
   }
+
+  @Test
+  @EnabledIf(expression = enabledTest, loadContext = true)
+  @DisplayName("Delete")
+  public void delete() {
+
+    RestAssuredWebTestClient.responseSpecification = noContentTypeAndVoidResponses();
+
+    dbUtils.countAndExecuteFlux(itemService.getAll(), 2);
+
+    RestAssuredWebTestClient
+
+         .given()
+         .webTestClient(mockedWebClient)
+
+         .when()
+         .delete(DELETE, item1.get_id())
+
+         .then()
+         .log()
+         .everything()
+
+         .statusCode(NO_CONTENT.value())
+    ;
+
+    dbUtils.countAndExecuteFlux(itemService.getAll(), 1);
+  }
+
+
+  @Test
+  @EnabledIf(expression = enabledTest, loadContext = true)
+  @DisplayName("UpdateOptim")
+  public void updateOptim() {
+    // OPTMISTIC-LOCKING-UPDATE:
+    // A) Uses the 'VERSION-ANNOTATION' in THE Entity
+    // B) to prevent update-problems when happens 'CONCURRENT-UPDATES'
+    // C) EXPLANATION:
+    //  C.1) The ENTITY-VERSION in the UPDATING-OBJECT
+    //  C.2) must be the same ENTITY-VERSION than the DB-OBJECT
+    // DB-OBJECT-VERSION should be the same as the OBJECT-TO-BE-UPDATED
+    var initialVersion = item1.getVersion();
+    var updatedVersion = initialVersion + 1;
+
+    var previousName = item1.getName();
+    item1.setName("NewName");
+
+    RestAssuredWebTestClient
+         .given()
+         .webTestClient(mockedWebClient)
+
+         .body(item1)
+
+         .when()
+         .put(UPDATE)
+
+         .then()
+         .log()
+         .everything()
+
+         .statusCode(OK.value())
+         .body("name", not(equalTo(previousName)))
+         .body("version", hasToString(Long.toString(updatedVersion)))
+
+         .body(matchesJsonSchemaInClasspath("contracts/saveOrUpdate.json"))
+    ;
+  }
+
 
 }

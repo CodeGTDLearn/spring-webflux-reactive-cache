@@ -21,7 +21,7 @@ public class ItemBuilder {
   }
 
 
-  public static ItemBuilder itemNoID() {
+  public static ItemBuilder itemWithoutID() {
 
     Item item = new Item();
 

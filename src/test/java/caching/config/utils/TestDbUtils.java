@@ -21,12 +21,12 @@ public class TestDbUtils {
   private ItemDAOTempl daoTempl;
 
 
-  public <E> void countAndExecuteFlux(Flux<E> flux, int totalElements) {
+  public <E> void countAndExecuteFlux(Flux<E> flux, int total) {
 
     StepVerifier
          .create(flux)
          .expectSubscription()
-         .expectNextCount(totalElements)
+         .expectNextCount(total)
          .verifyComplete();
   }
 
@@ -39,7 +39,7 @@ public class TestDbUtils {
                   .doOnNext(item -> System.out.printf(
                        """
                             >=> FindAll DB Elements >=>
-                            >=> Saved 'User' in DB:
+                            >=> Saved 'Item' in DB:
                                 |> ID: %s
                                 |> Name: %s
 
