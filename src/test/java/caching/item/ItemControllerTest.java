@@ -1,12 +1,15 @@
 package caching.item;
 
-import caching.config.TcContainerReplicaset;
+
+import caching.config.testcontainter.TcContainerReplicaset;
+import caching.config.utils.DbUtilsConfig;
 import caching.config.utils.TestDbUtils;
 import io.restassured.module.webtestclient.RestAssuredWebTestClient;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -17,10 +20,12 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 
 import static caching.config.databuilders.ItemBuilder.itemWithoutID;
+
 import static caching.config.utils.RestAssureSpecs.*;
 import static caching.config.utils.TestUtils.*;
 import static caching.item.ItemRoutes.*;
-import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
+
+import static io.restassured.module.webtestclient.matcher.
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -57,6 +62,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
 */
 @DisplayName("2 Testcontainer Transactions")
 @AutoConfigureWebTestClient
+@Import({DbUtilsConfig.class})
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @DirtiesContext(classMode = BEFORE_CLASS)
 @TestPropertySource("classpath:application.yml")
@@ -118,7 +124,7 @@ public class ItemControllerTest {
 
     globalAfterAll();
     globalTestMessage(testInfo.getDisplayName(), "class-end");
-//    closeTcContainer();
+    //    closeTcContainer();
   }
 
   @BeforeEach
@@ -168,7 +174,7 @@ public class ItemControllerTest {
 
          .statusCode(BAD_REQUEST.value())
 
-//         .body(matchesJsonSchemaInClasspath("contracts/exception.json"))
+    //         .body(matchesJsonSchemaInClasspath("contracts/exception.json"))
     ;
 
     dbUtils.countAndExecuteFlux(itemService.getAll(), 2);
@@ -202,8 +208,8 @@ public class ItemControllerTest {
          .body("name", hasItems(
               itemNoId.getName(),
               lastItem.getName()
-                               ))
-//         .body(matchesJsonSchemaInClasspath("contracts/transaction.json"))
+         ))
+    //         .body(matchesJsonSchemaInClasspath("contracts/transaction.json"))
     ;
 
     dbUtils.countAndExecuteFlux(itemService.getAll(), 4);
@@ -234,7 +240,7 @@ public class ItemControllerTest {
 
          .statusCode(CREATED.value())
          .body("name", equalTo(userIsolated.getName()))
-//         .body(matchesJsonSchemaInClasspath("contracts/save.json"))
+    //         .body(matchesJsonSchemaInClasspath("contracts/save.json"))
     ;
 
     dbUtils.countAndExecuteFlux(itemService.getAll(), 3);
@@ -242,11 +248,12 @@ public class ItemControllerTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("2 FindAll")
+  @DisplayName("2 GetAll")
   public void getAll() {
 
-    dbUtils.checkFluxListElements(itemService.getAll()
-                                             .flatMap(Flux::just), asList(item1, item2));
+    dbUtils.checkFluxListElements(
+         itemService.getAll()
+                    .flatMap(Flux::just), asList(item1, item2));
 
     RestAssuredWebTestClient
 
@@ -264,7 +271,8 @@ public class ItemControllerTest {
          .body("size()", is(2))
          .body("$", hasSize(2))
          .body("name", hasItems(item1.getName(), item1.getName()))
-         .body(matchesJsonSchemaInClasspath("contracts/getAll.json"));
+         .body(matchesJsonSchemaInClasspath("contracts/getAll.json"))
+    ;
 
     dbUtils.countAndExecuteFlux(itemService.getAll(), 2);
   }
@@ -295,7 +303,6 @@ public class ItemControllerTest {
 
     dbUtils.countAndExecuteFlux(itemService.getAll(), 1);
   }
-
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
@@ -334,6 +341,4 @@ public class ItemControllerTest {
          .body(matchesJsonSchemaInClasspath("contracts/saveOrUpdate.json"))
     ;
   }
-
-
 }

@@ -21,4 +21,7 @@ public interface ItemService {
 
 
   Mono<Item> getItem_withCache(String id);
+
+
+  Flux<Item> findAll();
 }

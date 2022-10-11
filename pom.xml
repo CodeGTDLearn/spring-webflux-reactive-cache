@@ -24,7 +24,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <testcontainers.version>1.16.2</testcontainers.version>
-        <rest-assured.version>4.3.0</rest-assured.version>
+        <rest-assured.version>4.4.0</rest-assured.version>
         <groovy.version>3.0.2</groovy.version>
         <junit-jupiter.version>5.8.2</junit-jupiter.version>
     </properties>
@@ -71,7 +71,6 @@
             ║      CACHE DEPENDENCIES      ║
             ╚══════════════════════════════╝-->
 
-
         <!--╔══════════════════════════════╗
             ║     GENERAL DEPENDENCIES     ║
             ╚══════════════════════════════╝-->
@@ -110,12 +109,6 @@
             <version>1.0.2</version>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>org.junit.platform</groupId>-->
-        <!--            <artifactId>junit-platform-suite-engine</artifactId>-->
-        <!--            <version>1.8.2</version>-->
-        <!--        </dependency>-->
-
 
         <!--╔══════════════════════════════╗
             ║REST-ASSURED TEST DEPENDENCIES║
@@ -123,50 +116,50 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <version>4.5.0</version>
+            <version>4.4.0</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>json-schema-validator</artifactId>
-            <version>4.5.0</version>
+            <version>4.4.0</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>spring-web-test-client</artifactId>
-            <version>5.2.0</version>
+            <version>4.4.0</version>
             <scope>test</scope>
-            <exclusions><!-- https://www.baeldung.com/maven-version-collision -->
-                <exclusion>
-                    <groupId>org.apache.groovy</groupId>
-                    <artifactId>groovy</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.groovy</groupId>
-                    <artifactId>groovy-xml</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>json-path</artifactId>
-            <version>5.2.0</version>
+            <version>4.4.0</version>
         </dependency>
 
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>xml-path</artifactId>
-            <version>5.2.0</version>
+            <version>4.4.0</version>
+<!--            <exclusions>&lt;!&ndash; https://www.baeldung.com/maven-version-collision &ndash;&gt;-->
+<!--                <exclusion>-->
+<!--                    <groupId>org.apache.groovy</groupId>-->
+<!--                    <artifactId>groovy</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>org.apache.groovy</groupId>-->
+<!--                    <artifactId>groovy-xml</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
         </dependency>
 
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured-common</artifactId>
-            <version>5.2.0</version>
+            <version>4.4.0</version>
         </dependency>
 
         <!--╔══════════════════════════════╗

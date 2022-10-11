@@ -24,7 +24,7 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 @Import({TransactionManagerConfig.class})
 @Slf4j
 @Configuration
-@EnableReactiveMongoRepositories(basePackages = {"com.mongo.rs.modules.user"})
+@EnableReactiveMongoRepositories(basePackages = {"caching.item"})
 public class ItemConfig extends AbstractReactiveMongoConfiguration {
 
   private String rootUri;

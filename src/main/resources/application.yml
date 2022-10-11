@@ -1,0 +1,8 @@
+server:
+  port: ${PORT_API}
+
+spring:
+  profiles:
+    active: rs
+    group:
+      rs: singlenode, log

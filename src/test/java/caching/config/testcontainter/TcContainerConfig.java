@@ -1,4 +1,4 @@
-package caching.config;
+package caching.config.testcontainter;
 
 import org.junit.jupiter.api.extension.Extension;
 import org.testcontainers.containers.MongoDBContainer;

@@ -51,7 +51,6 @@ public class TestUtils {
       default -> title = "";
     }
 
-
     System.out.printf(
 
          "╔════════════════════════════════════════════════════════════════════╗\n" +
@@ -74,7 +73,6 @@ public class TestUtils {
         case "container-state" -> title = "  ...TEST'S TC-CONTAINER  ";
         default -> title = "";
       }
-
 
       System.out.printf(
            "╔═══════════════════════════════════════════════════════════════════════╗\n" +

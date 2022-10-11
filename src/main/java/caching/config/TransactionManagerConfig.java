@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.ReactiveMongoTransactionManager;
   ║  THE ONLY REASON FOR THIS BEAN IS HERE IS:         ║
   ║  TEST @Import in in the "MAIN-CONFIGURATIONS"      ║
   ╚════════════════════════════════════════════════════╝*/
-@Profile("dev-single-node-rs")
+@Profile("rs")
 //@Profile("dev-three-nodes-rs")
 //@Profile("prod-single-node-rs-auth")
 @Slf4j

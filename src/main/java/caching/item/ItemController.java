@@ -3,6 +3,7 @@ package caching.item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static caching.item.ItemRoutes.*;
@@ -32,8 +33,14 @@ public class ItemController {
   @GetMapping(GET_BY_ID)
   @ResponseStatus(OK)
   public Mono<Item> getItem(@RequestParam String id) {
-
     return itemService.getById(id);
+  }
+
+  @GetMapping(GET_ALL)
+  @ResponseStatus(OK)
+  public Flux<Item> findAll() {
+
+    return itemService.findAll();
   }
 
   @Transactional
