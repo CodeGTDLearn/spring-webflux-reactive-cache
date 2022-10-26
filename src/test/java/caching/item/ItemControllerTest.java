@@ -25,7 +25,8 @@ import static caching.config.utils.RestAssureSpecs.*;
 import static caching.config.utils.TestUtils.*;
 import static caching.item.ItemRoutes.*;
 
-import static io.restassured.module.webtestclient.matcher.
+
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -338,7 +339,7 @@ public class ItemControllerTest {
          .body("name", not(equalTo(previousName)))
          .body("version", hasToString(Long.toString(updatedVersion)))
 
-         .body(matchesJsonSchemaInClasspath("contracts/saveOrUpdate.json"))
+//         .body(matchesJsonSchemaInClasspath("contracts/saveOrUpdate.json"))
     ;
   }
 }

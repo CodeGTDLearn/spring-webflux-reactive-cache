@@ -18,16 +18,16 @@
         "type": "string",
         "title": "The _id Schema",
         "examples": [
-          "6345ecf984a49562608f567e",
-          "6345ecf984a49562608f567f"
+          "6359b5dcb45fdd0578112088",
+          "6359b5dcb45fdd0578112089"
         ]
       },
       "name": {
         "type": "string",
         "title": "The name Schema",
         "examples": [
-          "Mr. Marvis Wolff",
-          "Oliva Kuphal"
+          "Abe Von",
+          "Mrs. Sherryl Hoeger"
         ]
       },
       "price": {
@@ -45,35 +45,31 @@
         ]
       }
     },
-    "examples": [
+    "examples": [{
+      "_id": "6359b5dcb45fdd0578112088",
+      "name": "Abe Von",
+      "price": 0.0,
+      "version": 0
+    },
       {
-        "_id": "6345ecf984a49562608f567e",
-        "name": "Mr. Marvis Wolff",
+        "_id": "6359b5dcb45fdd0578112089",
+        "name": "Mrs. Sherryl Hoeger",
         "price": 0.0,
         "version": 0
-      },
-      {
-        "_id": "6345ecf984a49562608f567f",
-        "name": "Oliva Kuphal",
-        "price": 0.0,
-        "version": 0
-      }
-    ]
+      }]
   },
   "examples": [
-    [
+    [{
+      "_id": "6359b5dcb45fdd0578112088",
+      "name": "Abe Von",
+      "price": 0.0,
+      "version": 0
+    },
       {
-        "_id": "6345ecf984a49562608f567e",
-        "name": "Mr. Marvis Wolff",
+        "_id": "6359b5dcb45fdd0578112089",
+        "name": "Mrs. Sherryl Hoeger",
         "price": 0.0,
         "version": 0
-      },
-      {
-        "_id": "6345ecf984a49562608f567f",
-        "name": "Oliva Kuphal",
-        "price": 0.0,
-        "version": 0
-      }
-    ]
+      }]
   ]
 }
