@@ -30,7 +30,8 @@ public class ItemDAOTempl {
     Flux<String> collections = reactiveMongoTemplate.getCollectionNames();
 
     return collections
-         .map(item -> reactiveMongoTemplate.dropCollection(item + ".class"))
+         .map(item -> reactiveMongoTemplate
+              .dropCollection(item + ".class"))
          .thenMany(collections)
          .map(item -> item + "\n");
   }

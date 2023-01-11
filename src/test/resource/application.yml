@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: cache-test
+    active: crud-test
 
     group:
-      cache-test: log, test-singlenode
+      crud-test: log, test-singlenode

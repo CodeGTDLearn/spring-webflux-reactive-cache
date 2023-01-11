@@ -1,14 +1,12 @@
 package caching.item;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static caching.item.ItemRoutes.*;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.*;
 
 
 @RestController
@@ -17,7 +15,6 @@ import static org.springframework.http.HttpStatus.OK;
 public class ItemController {
 
   private final ItemService itemService;
-
 
   @PostMapping(SAVE)
   @ResponseStatus(CREATED)
@@ -30,29 +27,33 @@ public class ItemController {
          ;
   }
 
+  @PutMapping(UPDATE)
+  @ResponseStatus(OK)
+  public Mono<Item> update(@RequestBody Item item) {
+
+    return
+         itemService
+              .update(item)
+         //              .doOnNext(this::throwSimpleExceptionWhenEmptyName)
+         ;
+  }
+
   @GetMapping(GET_BY_ID)
   @ResponseStatus(OK)
-  public Mono<Item> getItem(@RequestParam String id) {
+  public Mono<Item> getById(@RequestParam String id) {
     return itemService.getById(id);
   }
 
   @GetMapping(GET_ALL)
   @ResponseStatus(OK)
-  public Flux<Item> findAll() {
+  public Flux<Item> getAll() {
 
-    return itemService.findAll();
+    return itemService.getAll();
   }
 
-  @Transactional
-  @GetMapping(GET_ITEM_WITH_CACHE)
-  @ResponseStatus(OK)
-  public Mono<Item> getItem_withCache(@RequestParam String id) {
-
-    return
-         itemService.getItem_withCache(id)
-//              .doOnNext(this::throwSimpleExceptionWhenEmptyName)
-         ;
+  @DeleteMapping(DELETE)
+  @ResponseStatus(NO_CONTENT)
+  public Mono<Void> delete(@PathVariable String id){
+    return itemService.delete(id);
   }
-
-
 }

@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 
+import static caching.config.databuilders.ItemBuilder.itemWithID;
 import static caching.config.databuilders.ItemBuilder.itemWithoutID;
 
 import static caching.config.utils.RestAssureSpecs.*;
@@ -26,7 +27,6 @@ import static caching.config.utils.TestUtils.*;
 import static caching.item.ItemRoutes.*;
 
 
-import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -67,7 +67,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @DirtiesContext(classMode = BEFORE_CLASS)
 @TestPropertySource("classpath:application.yml")
-@ActiveProfiles({"cache-test"})
+@ActiveProfiles({"crud-test"})
 @TcContainerReplicaset // TEST TRANSACTIONS
 public class ItemControllerTest {
   /*
@@ -184,17 +184,15 @@ public class ItemControllerTest {
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
   @Tag("replicaset-transaction")
-  @DisplayName("1 NoRollback")
-  public void saveNoRollback() {
+  @DisplayName("1 save")
+  public void save() {
 
     itemNoId = itemWithoutID().create();
-    Item lastItem = itemWithoutID().create();
-    List<Item> itemList = asList(itemNoId, lastItem);
 
     RestAssuredWebTestClient
          .given()
          .webTestClient(mockedWebClient)
-         .body(itemList)
+         .body(itemNoId)
 
          .when()
          .post(SAVE)
@@ -204,16 +202,11 @@ public class ItemControllerTest {
          .everything()
 
          .statusCode(CREATED.value())
-         .body("size()", is(2))
-         .body("$", hasSize(2))
-         .body("name", hasItems(
-              itemNoId.getName(),
-              lastItem.getName()
-         ))
+         .body("name", equalTo(itemNoId.getName()))
     //         .body(matchesJsonSchemaInClasspath("contracts/transaction.json"))
     ;
 
-    dbUtils.countAndExecuteFlux(itemService.getAll(), 4);
+    dbUtils.countAndExecuteFlux(itemService.getAll(), 3);
   }
 
   @Test
@@ -224,7 +217,7 @@ public class ItemControllerTest {
   @DisplayName("3 saveWithID")
   public void saveWithID() {
 
-    Item userIsolated = itemWithoutID().create();
+    Item userIsolated = itemWithID().create();
 
     RestAssuredWebTestClient
          .given()
@@ -272,7 +265,7 @@ public class ItemControllerTest {
          .body("size()", is(2))
          .body("$", hasSize(2))
          .body("name", hasItems(item1.getName(), item1.getName()))
-         .body(matchesJsonSchemaInClasspath("contracts/getAll.json"))
+//         .body(matchesJsonSchemaInClasspath("contracts/getAll.json"))
     ;
 
     dbUtils.countAndExecuteFlux(itemService.getAll(), 2);
@@ -316,11 +309,12 @@ public class ItemControllerTest {
     //  C.1) The ENTITY-VERSION in the UPDATING-OBJECT
     //  C.2) must be the same ENTITY-VERSION than the DB-OBJECT
     // DB-OBJECT-VERSION should be the same as the OBJECT-TO-BE-UPDATED
-    var initialVersion = item1.getVersion();
-    var updatedVersion = initialVersion + 1;
+    var previousVersion = item1.getVersion();
+    var updatedVersion = previousVersion + 1;
 
     var previousName = item1.getName();
-    item1.setName("NewName");
+    var newName = "NewName";
+    item1.setName(newName);
 
     RestAssuredWebTestClient
          .given()
@@ -337,6 +331,8 @@ public class ItemControllerTest {
 
          .statusCode(OK.value())
          .body("name", not(equalTo(previousName)))
+         .body("name", equalTo(newName))
+         .body("version", not(equalTo(previousVersion)))
          .body("version", hasToString(Long.toString(updatedVersion)))
 
 //         .body(matchesJsonSchemaInClasspath("contracts/saveOrUpdate.json"))

@@ -18,10 +18,4 @@ public interface ItemService {
 
 
   Mono<Void> delete(String projectId);
-
-
-  Mono<Item> getItem_withCache(String id);
-
-
-  Flux<Item> findAll();
 }
