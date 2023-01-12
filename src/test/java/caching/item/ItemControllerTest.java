@@ -158,7 +158,7 @@ public class ItemControllerTest {
 
     itemNoId = itemWithoutID().create();
     Item lastItem = itemWithoutID().create();
-    lastItem.setName("");
+    lastItem.setName("xx");
     List<Item> itemList = asList(itemNoId, lastItem);
 
     RestAssuredWebTestClient
@@ -167,7 +167,7 @@ public class ItemControllerTest {
          .body(itemList)
 
          .when()
-         .post(SAVE)
+         .post(SAVE_TRANSACT)
 
          .then()
          .log()
@@ -338,4 +338,6 @@ public class ItemControllerTest {
 //         .body(matchesJsonSchemaInClasspath("contracts/saveOrUpdate.json"))
     ;
   }
+
+
 }

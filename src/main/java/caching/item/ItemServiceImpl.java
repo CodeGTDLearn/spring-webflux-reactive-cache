@@ -1,11 +1,12 @@
 package caching.item;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 
 @Service("itemService")
@@ -22,7 +23,6 @@ public class ItemServiceImpl implements ItemService {
 
 
   @Override
-  @Transactional
   public Mono<Item> update(Item item) {
 
     return itemDAOCrud.save(item);
@@ -44,6 +44,12 @@ public class ItemServiceImpl implements ItemService {
   public Mono<Void> delete(String id) {
 
     return itemDAOCrud.deleteById(id);
+  }
+
+  @Override
+  public Flux<Item> saveTransact(List<Item> userList) {
+
+    return itemDAOCrud.saveAll(userList);
   }
 
 
