@@ -1,4 +1,4 @@
-package caching.item;
+package caching.config.exceptions;
 
 public class ItemExceptionNameEmpty extends RuntimeException {
 

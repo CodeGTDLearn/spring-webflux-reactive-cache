@@ -1,5 +1,7 @@
 package caching.item;
 
+import caching.config.exceptions.ItemExceptionNameEmpty;
+import caching.config.exceptions.types.ProjectNameIsEmptyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -7,9 +9,10 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
 import java.util.List;
 
-import static caching.item.ItemRoutes.*;
+import static caching.config.routes.ItemRoutes.*;
 import static io.netty.util.internal.StringUtil.isNullOrEmpty;
 import static org.springframework.http.HttpStatus.*;
 
@@ -40,7 +43,7 @@ public class ItemController {
     return
          itemService
               .update(item)
-         //              .doOnNext(this::throwSimpleExceptionWhenEmptyName)
+                       .doOnNext(this::throwSimpleExceptionWhenEmptyName)
          ;
   }
 
@@ -64,21 +67,27 @@ public class ItemController {
   }
 
   @Transactional
-  @PostMapping(SAVE_TRANSACT)
+  @PostMapping(SAVE_ROLLBACK)
   @ResponseStatus(CREATED)
-  public Flux<Item> saveTransact(@RequestBody List<Item> userList) {
+  public Flux<Item> saveRollback(@Valid @RequestBody List<Item> userList) {
 
     return
          itemService
               .saveTransact(userList)
-              .doOnNext(this::throwSimpleExceptionWhenEmptyName)
+              .onErrorResume(error -> {
+                               if (error instanceof ProjectNameIsEmptyException) {
+                                 return projectThrower.throwProjectNameIsEmptyException();
+                               }
+                               return Mono.error(new ResponseStatusException(NOT_FOUND));
+                             }
+              )
          ;
   }
 
   private void throwSimpleExceptionWhenEmptyName(Item user) {
 
     if (isNullOrEmpty(user.getName())) {
-      throw new ItemExceptionNameEmpty("Fail: Empty Name");
+      throw new ItemExceptionNameEmpty(BAD_REQUEST, "Fail: Empty Name");
     }
   }
 }

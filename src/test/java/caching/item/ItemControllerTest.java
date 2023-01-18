@@ -21,12 +21,9 @@ import java.util.List;
 
 import static caching.config.databuilders.ItemBuilder.itemWithID;
 import static caching.config.databuilders.ItemBuilder.itemWithoutID;
-
 import static caching.config.utils.RestAssureSpecs.*;
 import static caching.config.utils.TestUtils.*;
-import static caching.item.ItemRoutes.*;
-
-
+import static caching.config.routes.ItemRoutes.*;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -61,7 +58,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
   ║  d) and setting this URI in 'Properties of the Test'                 ║
   ╚══════════════════════════════════════════════════════════════════════╝
 */
-@DisplayName("2 Testcontainer Transactions")
+@DisplayName("1 Testcontainer Controller")
 @AutoConfigureWebTestClient
 @Import({DbUtilsConfig.class})
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -152,13 +149,12 @@ public class ItemControllerTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @Tag("replicaset-transaction")
   @DisplayName("2 saveRollback")
   public void saveRollback() {
 
     itemNoId = itemWithoutID().create();
     Item lastItem = itemWithoutID().create();
-    lastItem.setName("xx");
+    lastItem.setName("");
     List<Item> itemList = asList(itemNoId, lastItem);
 
     RestAssuredWebTestClient
@@ -167,15 +163,16 @@ public class ItemControllerTest {
          .body(itemList)
 
          .when()
-         .post(SAVE_TRANSACT)
+         .post(SAVE_ROLLBACK)
 
          .then()
          .log()
          .everything()
 
-         .statusCode(BAD_REQUEST.value())
+         .statusCode(NOT_ACCEPTABLE.value())
 
     //         .body(matchesJsonSchemaInClasspath("contracts/exception.json"))
+         .body("developerMensagem" ,is("Item[Fail: Empty Name].notFound"))
     ;
 
     dbUtils.countAndExecuteFlux(itemService.getAll(), 2);
@@ -183,7 +180,7 @@ public class ItemControllerTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @Tag("replicaset-transaction")
+
   @DisplayName("1 save")
   public void save() {
 
@@ -211,9 +208,6 @@ public class ItemControllerTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @Tags(value = {
-       @Tag("replicaset-transaction"),
-       @Tag("standalone")})
   @DisplayName("3 saveWithID")
   public void saveWithID() {
 
@@ -265,7 +259,7 @@ public class ItemControllerTest {
          .body("size()", is(2))
          .body("$", hasSize(2))
          .body("name", hasItems(item1.getName(), item1.getName()))
-//         .body(matchesJsonSchemaInClasspath("contracts/getAll.json"))
+    //         .body(matchesJsonSchemaInClasspath("contracts/getAll.json"))
     ;
 
     dbUtils.countAndExecuteFlux(itemService.getAll(), 2);
@@ -335,9 +329,62 @@ public class ItemControllerTest {
          .body("version", not(equalTo(previousVersion)))
          .body("version", hasToString(Long.toString(updatedVersion)))
 
-//         .body(matchesJsonSchemaInClasspath("contracts/saveOrUpdate.json"))
+    //         .body(matchesJsonSchemaInClasspath("contracts/saveOrUpdate.json"))
     ;
   }
 
-
+//  @Test
+//  @EnabledIf(expression = enabledTest, loadContext = true)
+//  @DisplayName("Blockhound")
+//  public void blockHoundWorks() {
+//    blockHoundTestCheck();
+//  }
+//@org.junit.Test
+//public void saveall_transaction_rollback() {
+//  List<Anime> listAnime = Arrays.asList(anime_1 , anime_2);
+//
+//  RestAssuredWebTestClient
+//       .given()
+//       .webTestClient(webTestClient)
+//       .header("Accept" , ContentType.ANY)
+//       .header(RoleUsersHeaders.role_admin_header)
+//       .body(listAnime)
+//
+//       .when()
+//       .post("/saveall_rollback")
+//
+//       .then()
+//       .contentType(ContentType.JSON)
+//       .statusCode(CREATED.value())
+//       .log().headers().and()
+//       .log().body().and()
+//
+//       .body("size()" ,is(listAnime.size()))
+//       .body("name" ,hasItems(anime_1.getName() ,anime_2.getName()))
+//  ;
+//}
+//
+//  @org.junit.Test
+//  public void saveall_transaction_rollback_ERROR() {
+//    List<Anime> listAnime = Arrays.asList(anime_1 ,anime_2);
+//
+//    RestAssuredWebTestClient
+//         .given()
+//         .webTestClient(webTestClient)
+//         .header("Accept" ,ContentType.ANY)
+//         .header(RoleUsersHeaders.role_admin_header)
+//         .body(listAnime)
+//
+//         .when()
+//         .post("/saveall_rollback")
+//
+//         .then()
+//         .contentType(ContentType.JSON)
+//         .statusCode(BAD_REQUEST.value())
+//         .log().headers().and()
+//         .log().body().and()
+//
+//         .body("developerMensagem" ,is("A ResponseStatusException happened!!!"))
+//    ;
+//  }
 }

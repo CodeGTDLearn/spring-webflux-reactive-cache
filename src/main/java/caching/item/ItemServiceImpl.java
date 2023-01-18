@@ -21,7 +21,6 @@ public class ItemServiceImpl implements ItemService {
     return itemDAOCrud.save(item);
   }
 
-
   @Override
   public Mono<Item> update(Item item) {
 
@@ -47,10 +46,8 @@ public class ItemServiceImpl implements ItemService {
   }
 
   @Override
-  public Flux<Item> saveTransact(List<Item> userList) {
+  public Flux<Item> saveTransact(List<Item> itemList) {
 
-    return itemDAOCrud.saveAll(userList);
+    return itemDAOCrud.saveAll(itemList);
   }
-
-
 }

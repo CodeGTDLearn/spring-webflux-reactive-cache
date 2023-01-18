@@ -16,11 +16,11 @@ public interface ItemService {
   Flux<Item> getAll();
 
 
-  Mono<Item> update(Item project);
+  Mono<Item> update(Item item);
 
 
-  Mono<Void> delete(String projectId);
+  Mono<Void> delete(String id);
 
 
-  Flux<Item> saveTransact(List<Item> userList);
+  Flux<Item> saveTransact(List<Item> itemList);
 }
