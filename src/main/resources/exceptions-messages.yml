@@ -10,3 +10,4 @@ exceptions:
   messages:
     item:
       itemNameIsEmptyMessage: Item name is empty. Try again!!!!
+      itemNotFoundMessage: Item not found!

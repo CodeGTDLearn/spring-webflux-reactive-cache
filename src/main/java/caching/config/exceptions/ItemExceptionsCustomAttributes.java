@@ -15,11 +15,9 @@ import org.springframework.context.annotation.PropertySource;
 @Setter
 @Configuration
 @ConfigurationProperties(prefix = "exceptions.messages.item")
-@PropertySource(
-     value = "classpath:exceptions-messages.yml",
-     factory =
-          YamlProcessor.class)
+@PropertySource(value = "classpath:exceptions-messages.yml", factory = YamlProcessor.class)
 public class ItemExceptionsCustomAttributes {
 
   private String itemNameIsEmptyMessage;
+  private String itemNotFoundMessage;
 }

@@ -1,11 +1,9 @@
 package caching.item;
 
 import caching.config.exceptions.ItemExceptionsThrower;
-import caching.config.exceptions.types.ItemNameIsEmptyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -23,15 +21,42 @@ public class ItemController {
   private final ItemService itemService;
   private final ItemExceptionsThrower itemExceptionsThrower;
 
+  @DeleteMapping(DELETE)
+  @ResponseStatus(NO_CONTENT)
+  public Mono<Void> delete(@PathVariable String id) {
+
+    return
+         itemService
+              .findById(id)
+              .switchIfEmpty(itemExceptionsThrower.throwItemNotFoundException())
+              .then(itemService.delete(id))
+         ;
+  }
+
+  @GetMapping(FIND_ALL)
+  @ResponseStatus(OK)
+  public Flux<Item> findAll() {
+
+    return itemService.findAll();
+  }
+
+  @GetMapping(FIND_BY_ID)
+  @ResponseStatus(OK)
+  public Mono<Item> findById(@PathVariable String id) {
+
+    return
+         itemService
+              .findById(id)
+              .switchIfEmpty(itemExceptionsThrower.throwItemNotFoundException())
+         ;
+  }
+
   @Transactional
   @PostMapping(SAVE)
   @ResponseStatus(CREATED)
   public Mono<Item> save(@Valid @RequestBody Item item) {
 
-    return itemService
-         .save(item)
-         .onErrorResume(this::exceptionSelector);
-
+    return itemService.save(item);
   }
 
   @Transactional
@@ -40,37 +65,9 @@ public class ItemController {
   public Mono<Item> update(@RequestBody Item item) {
 
     return itemService
-         .update(item)
-         .onErrorResume(this::exceptionSelector);
-  }
-
-  @GetMapping(GET_BY_ID)
-  @ResponseStatus(OK)
-  public Mono<Item> getById(@PathVariable String id) {
-
-    return itemService.getById(id);
-  }
-
-  @GetMapping(GET_ALL)
-  @ResponseStatus(OK)
-  public Flux<Item> getAll() {
-
-    return itemService.getAll();
-  }
-
-  @DeleteMapping(DELETE)
-  @ResponseStatus(NO_CONTENT)
-  public Mono<Void> delete(@PathVariable String id) {
-
-    return itemService.delete(id);
-  }
-
-
-  private Mono<Item> exceptionSelector(Throwable error) {
-
-    if (error instanceof ItemNameIsEmptyException)
-      return itemExceptionsThrower.throwsItemNameIsEmptyException();
-
-    return Mono.error(new ResponseStatusException(NOT_FOUND));
+         .findById(item.get_id())
+         .switchIfEmpty(itemExceptionsThrower.throwItemNotFoundException())
+         .then(itemService.update(item))
+         ;
   }
 }

@@ -1,6 +1,5 @@
 package caching.config.exceptions.global;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
@@ -37,23 +36,23 @@ import static org.springframework.boot.web.error.ErrorAttributeOptions.*;
 //     - caso um erro aconteça em uma thread que não é a que operou a controller,
 //     - o ControllerAdvice não vai ser notificado "
 //     - https://medium.com/nstech/programa%C3%A7%C3%A3o-reativa-com-spring-boot-webflux-e-mongodb-chega-de-sofrer-f92fb64517c3
-@Component
-@Order(- 2)
 //CustomGlobalExceptionHandler COMES BEFORE the SpringWebFluxGlobalExceptionHandlerDefault
+@Order(- 2)
+@Component
 public class GlobalExceptionHandler extends AbstractErrorWebExceptionHandler {
 
   private final String completeStackTrace = "completeStackTrace=true";
 
 
   public GlobalExceptionHandler(
-       ErrorAttributes errorAttributes,
-       WebProperties.Resources resources,
-       ApplicationContext applicationContext,
-       ServerCodecConfigurer codecConfigurer) {
+       ErrorAttributes attributes,
+       WebProperties webproperties,
+       ApplicationContext context,
+       ServerCodecConfigurer configurer) {
 
-    super(errorAttributes, resources, applicationContext);
-    this.setMessageWriters(codecConfigurer.getWriters());
-    super.setMessageReaders(codecConfigurer.getReaders());
+    super(attributes, webproperties.getResources(), context);
+    this.setMessageWriters(configurer.getWriters());
+    super.setMessageReaders(configurer.getReaders());
   }
 
 
@@ -64,16 +63,14 @@ public class GlobalExceptionHandler extends AbstractErrorWebExceptionHandler {
          .route(
               RequestPredicates.all(),
               this::formatErrorResponse
-               );
+         );
   }
 
 
   private Mono<ServerResponse> formatErrorResponse(ServerRequest request) {
 
-    String query =
-         request
-              .uri()
-              .getQuery();
+    String query = request.uri()
+                          .getQuery();
 
     ErrorAttributeOptions errorAttributeOptions =
          isTraceEnabled(query)

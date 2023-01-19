@@ -1,6 +1,7 @@
 package caching.config.exceptions;
 
 import caching.config.exceptions.types.ItemNameIsEmptyException;
+import caching.config.exceptions.types.ItemNotFoundException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -27,6 +28,13 @@ public class ItemExceptionsThrower {
     return Mono.error(
          new ItemNameIsEmptyException(
               attributes.getItemNameIsEmptyMessage()));
+  }
+
+  public <T> Mono<T> throwItemNotFoundException() {
+
+    return Mono.error(
+         new ItemNotFoundException(
+              attributes.getItemNotFoundMessage()));
   }
 
 }

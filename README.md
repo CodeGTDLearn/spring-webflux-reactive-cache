@@ -1,7 +1,6 @@
 ## Spring-WebFlux-Replicaset
 
 ### Index
-* [DISCLAIMER](#disclaimer)
 * [WebFlux](#webflux)
 * [Application.Yml](#application_yml)
 * [Docker](#docker)
@@ -10,10 +9,6 @@
 * [Tests Junit 5](#tests-junit-5)
 * [GitGuardian pre commit-githook](#gitguardian)
 * [Reactive Cache](#reactive-cache)
-
-### Disclaimer
-1. This concept-proof is focused in test MongoDb
-    * GridFs "was not" explored in this concept-proof
 
 ### WebFlux
 1. RestControllers
@@ -105,22 +100,14 @@
   * MongoDb StandAlone
 
 ### Tests Junit 5
-1. MultiThread/Parallel Test
-    1. Aborted: Because server-costs in CI/CD
-2. RestAssured:
+1. ConsoleLog Border
+2. StepVerifier
+3. RestAssured:
     1. RestAssuredWebTestClient:
         1. Reactive RestAssured
     2. JsonSchemaValidator - CDD Contracts Driven Development
         1. Validate Responses
-3. Ordered tests (Junit 5.8.2)
-4. Suites
-   1. [junit5-test-suites-examples](https://howtodoinjava.com/junit5/junit5-test-suites-examples/)
-5. Tags
-6. System.setProperty:
-   1. Get environment.getActiveProfiles() for detect ReplicasetProfile
-7. EnabledIfSystemProperty
-   1. [junit5-enabledifsystempropert](https://self-learning-java-tutorial.blogspot.com/2021/07/junit5-enabledifsystemproperty.html)
-8. Spring Expression Language (SpEL) expressions:
+4. Spring Expression Language (SpEL) expressions:
    1. EnabledIf + SpEL
       2. [spring-5-enabledIf](https://www.baeldung.com/spring-5-enabledIf)
       3. [junit-5-conditional-test-execution](https://www.baeldung.com/junit-5-conditional-test-execution)

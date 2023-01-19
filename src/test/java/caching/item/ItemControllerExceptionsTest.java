@@ -58,7 +58,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
   ║  d) and setting this URI in 'Properties of the Test'                 ║
   ╚══════════════════════════════════════════════════════════════════════╝
 */
-@DisplayName("1 Testcontainer Controller")
+@DisplayName("1 Testcontainer Controller Exceptions")
 @AutoConfigureWebTestClient
 @Import({DbUtilsConfig.class})
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -67,7 +67,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
 @ActiveProfiles({"crud-test"})
 @TcContainerReplicaset // TEST TRANSACTIONS
 @TestMethodOrder(MethodOrderer.DisplayName.class)
-public class ItemControllerTest {
+public class ItemControllerExceptionsTest {
   /*
 ╔════════════════════════════════════════════════════════════╗
 ║              TEST-TRANSACTIONS + TEST-CONTAINERS           ║
@@ -176,36 +176,6 @@ public class ItemControllerTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("2 FindAll")
-  public void findAll() {
-
-    dbUtils.checkFluxListElements(itemService.findAll()
-                                             .flatMap(Flux::just), asList(item1, item2));
-
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
-
-         .when()
-         .get(FIND_ALL)
-
-         .then()
-         .log()
-         .everything()
-
-         .statusCode(OK.value())
-         .body("size()", is(2))
-         .body("$", hasSize(2))
-         .body("name", hasItems(item1.getName(), item1.getName()))
-    //         .body(matchesJsonSchemaInClasspath("contracts/getAll.json"))
-    ;
-
-    dbUtils.countAndExecuteFlux(itemService.findAll(), 2);
-  }
-
-  @Test
-  @EnabledIf(expression = enabledTest, loadContext = true)
   @DisplayName("3 FindById")
   public void findById() {
 
@@ -229,189 +199,5 @@ public class ItemControllerTest {
     ;
   }
 
-  @Test
-  @EnabledIf(expression = enabledTest, loadContext = true)
 
-  @DisplayName("4 Save")
-  public void save() {
-
-    itemNoId = itemWithoutID().create();
-
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
-         .body(itemNoId)
-
-         .when()
-         .post(SAVE)
-
-         .then()
-         .log()
-         .everything()
-
-         .statusCode(CREATED.value())
-         .body("name", equalTo(itemNoId.getName()))
-    //         .body(matchesJsonSchemaInClasspath("contracts/transaction.json"))
-    ;
-
-    dbUtils.countAndExecuteFlux(itemService.findAll(), 3);
-  }
-
-  @Test
-  @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("5 SaveRollback")
-  public void saveRollback() {
-
-    Item item = itemWithoutID().create();
-    item.setName("");
-
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
-         .body(item)
-
-         .when()
-         .post(SAVE)
-
-         .then()
-         .log()
-         .everything()
-
-         .statusCode(NOT_ACCEPTABLE.value())
-
-    //         .body(matchesJsonSchemaInClasspath("contracts/exception.json"))
-    //         .body("developerMensagem" ,is("Item[Fail: Empty Name].notFound"))
-    ;
-
-    dbUtils.countAndExecuteFlux(itemService.findAll(), 2);
-  }
-
-  @Test
-  @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("6 SaveWithID")
-  public void saveWithID() {
-
-    Item userIsolated = itemWithID().create();
-
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
-
-         .body(userIsolated)
-
-         .when()
-         .post(SAVE)
-
-         .then()
-         .log()
-         .everything()
-
-         .statusCode(CREATED.value())
-         .body("name", equalTo(userIsolated.getName()))
-    //         .body(matchesJsonSchemaInClasspath("contracts/save.json"))
-    ;
-
-    dbUtils.countAndExecuteFlux(itemService.findAll(), 3);
-  }
-
-  @Test
-  @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("7 UpdateOptim")
-  public void updateOptim() {
-    // OPTMISTIC-LOCKING-UPDATE:
-    // A) Uses the 'VERSION-ANNOTATION' in THE Entity
-    // B) to prevent update-problems when happens 'CONCURRENT-UPDATES'
-    // C) EXPLANATION:
-    //  C.1) The ENTITY-VERSION in the UPDATING-OBJECT
-    //  C.2) must be the same ENTITY-VERSION than the DB-OBJECT
-    // DB-OBJECT-VERSION should be the same as the OBJECT-TO-BE-UPDATED
-    var previousVersion = item1.getVersion();
-    var updatedVersion = previousVersion + 1;
-
-    var previousName = item1.getName();
-    var newName = "NewName";
-    item1.setName(newName);
-
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
-
-         .body(item1)
-
-         .when()
-         .put(UPDATE)
-
-         .then()
-         .log()
-         .everything()
-
-         .statusCode(OK.value())
-         .body("name", not(equalTo(previousName)))
-         .body("name", equalTo(newName))
-         .body("version", not(equalTo(previousVersion)))
-         .body("version", hasToString(Long.toString(updatedVersion)))
-
-    //         .body(matchesJsonSchemaInClasspath("contracts/saveOrUpdate.json"))
-    ;
-  }
-
-
-  //  @Test
-  //  @EnabledIf(expression = enabledTest, loadContext = true)
-  //  @DisplayName("Blockhound")
-  //  public void blockHoundWorks() {
-  //    blockHoundTestCheck();
-  //  }
-  //@org.junit.Test
-  //public void saveall_transaction_rollback() {
-  //  List<Anime> listAnime = Arrays.asList(anime_1 , anime_2);
-  //
-  //  RestAssuredWebTestClient
-  //       .given()
-  //       .webTestClient(webTestClient)
-  //       .header("Accept" , ContentType.ANY)
-  //       .header(RoleUsersHeaders.role_admin_header)
-  //       .body(listAnime)
-  //
-  //       .when()
-  //       .post("/saveall_rollback")
-  //
-  //       .then()
-  //       .contentType(ContentType.JSON)
-  //       .statusCode(CREATED.value())
-  //       .log().headers().and()
-  //       .log().body().and()
-  //
-  //       .body("size()" ,is(listAnime.size()))
-  //       .body("name" ,hasItems(anime_1.getName() ,anime_2.getName()))
-  //  ;
-  //}
-  //
-  //  @org.junit.Test
-  //  public void saveall_transaction_rollback_ERROR() {
-  //    List<Anime> listAnime = Arrays.asList(anime_1 ,anime_2);
-  //
-  //    RestAssuredWebTestClient
-  //         .given()
-  //         .webTestClient(webTestClient)
-  //         .header("Accept" ,ContentType.ANY)
-  //         .header(RoleUsersHeaders.role_admin_header)
-  //         .body(listAnime)
-  //
-  //         .when()
-  //         .post("/saveall_rollback")
-  //
-  //         .then()
-  //         .contentType(ContentType.JSON)
-  //         .statusCode(BAD_REQUEST.value())
-  //         .log().headers().and()
-  //         .log().body().and()
-  //
-  //         .body("developerMensagem" ,is("A ResponseStatusException happened!!!"))
-  //    ;
-  //  }
 }

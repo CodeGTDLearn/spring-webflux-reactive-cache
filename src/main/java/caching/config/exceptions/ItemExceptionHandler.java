@@ -1,6 +1,7 @@
 package caching.config.exceptions;
 
 import caching.config.exceptions.types.ItemNameIsEmptyException;
+import caching.config.exceptions.types.ItemNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Date;
 
 import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 // ==> EXCEPTIONS IN CONTROLLER:
 // *** REASON: IN WEBFLUX, EXCEPTIONS MUST BE IN CONTROLLER - WHY?
@@ -33,6 +35,20 @@ public class ItemExceptionHandler {
               new Date().getTime()
          );
     return new ResponseEntity<>(attributes, NOT_ACCEPTABLE);
+  }
+
+  @ExceptionHandler(ItemNotFoundException.class)
+  public ResponseEntity<?> ItemNotFoundException(ItemNotFoundException exception) {
+
+    ItemExceptionsAttributes attributes =
+         new ItemExceptionsAttributes(
+              exception.getMessage(),
+              exception.getClass()
+                       .getName(),
+              NOT_FOUND.value(),
+              new Date().getTime()
+         );
+    return new ResponseEntity<>(attributes, NOT_FOUND);
   }
 
 }

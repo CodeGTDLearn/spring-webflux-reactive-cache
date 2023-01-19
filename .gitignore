@@ -33,8 +33,7 @@ build/
 .vscode/
 
 ### OTHERS ###
-/docker/secrets/
-/docker/envs/
+/docker/
 /.env
 /.cache_ggshield
 /.pre-commit-config.yaml
