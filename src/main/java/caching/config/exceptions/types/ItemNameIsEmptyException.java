@@ -2,6 +2,7 @@ package caching.config.exceptions.types;
 
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
@@ -13,11 +14,12 @@ import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
 //     - o ControllerAdvice não vai ser notificado "
 //     - https://medium.com/nstech/programa%C3%A7%C3%A3o-reativa-com-spring-boot-webflux-e-mongodb-chega-de-sofrer-f92fb64517c3
 @ResponseStatus(NOT_ACCEPTABLE)
-public class ProjectNameIsEmptyException extends RuntimeException implements Serializable {
+public class ItemNameIsEmptyException extends RuntimeException implements Serializable {
 
+  @Serial
   private static final long serialVersionUID = - 2779773488307514980L;
 
-  public ProjectNameIsEmptyException(String message) {
+  public ItemNameIsEmptyException(String message) {
 
     super(message);
   }

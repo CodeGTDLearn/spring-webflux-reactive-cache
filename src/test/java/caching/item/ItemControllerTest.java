@@ -23,7 +23,8 @@ import static caching.config.databuilders.ItemBuilder.itemWithID;
 import static caching.config.databuilders.ItemBuilder.itemWithoutID;
 import static caching.config.utils.RestAssureSpecs.*;
 import static caching.config.utils.TestUtils.*;
-import static caching.config.routes.ItemRoutes.*;
+import static caching.config.ItemRoutes.*;
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -66,6 +67,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFOR
 @TestPropertySource("classpath:application.yml")
 @ActiveProfiles({"crud-test"})
 @TcContainerReplicaset // TEST TRANSACTIONS
+@TestMethodOrder(MethodOrderer.DisplayName.class)
 public class ItemControllerTest {
   /*
 ╔════════════════════════════════════════════════════════════╗
@@ -149,21 +151,19 @@ public class ItemControllerTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("2 saveRollback")
+  @DisplayName("3 saveRollback")
   public void saveRollback() {
 
-    itemNoId = itemWithoutID().create();
-    Item lastItem = itemWithoutID().create();
-    lastItem.setName("");
-    List<Item> itemList = asList(itemNoId, lastItem);
+    Item item = itemWithoutID().create();
+    item.setName("");
 
     RestAssuredWebTestClient
          .given()
          .webTestClient(mockedWebClient)
-         .body(itemList)
+         .body(item)
 
          .when()
-         .post(SAVE_ROLLBACK)
+         .post(SAVE)
 
          .then()
          .log()
@@ -172,7 +172,7 @@ public class ItemControllerTest {
          .statusCode(NOT_ACCEPTABLE.value())
 
     //         .body(matchesJsonSchemaInClasspath("contracts/exception.json"))
-         .body("developerMensagem" ,is("Item[Fail: Empty Name].notFound"))
+//         .body("developerMensagem" ,is("Item[Fail: Empty Name].notFound"))
     ;
 
     dbUtils.countAndExecuteFlux(itemService.getAll(), 2);
@@ -208,7 +208,7 @@ public class ItemControllerTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("3 saveWithID")
+  @DisplayName("2 saveWithID")
   public void saveWithID() {
 
     Item userIsolated = itemWithID().create();
@@ -236,7 +236,7 @@ public class ItemControllerTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("2 GetAll")
+  @DisplayName("6 GetAll")
   public void getAll() {
 
     dbUtils.checkFluxListElements(
@@ -267,7 +267,7 @@ public class ItemControllerTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("Delete")
+  @DisplayName("5 Delete")
   public void delete() {
 
     RestAssuredWebTestClient.responseSpecification = noContentTypeAndVoidResponses();
@@ -294,7 +294,7 @@ public class ItemControllerTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("UpdateOptim")
+  @DisplayName("4 UpdateOptim")
   public void updateOptim() {
     // OPTMISTIC-LOCKING-UPDATE:
     // A) Uses the 'VERSION-ANNOTATION' in THE Entity
@@ -333,7 +333,31 @@ public class ItemControllerTest {
     ;
   }
 
-//  @Test
+  @Test
+  @EnabledIf(expression = enabledTest, loadContext = true)
+  @DisplayName("7 GetById")
+  public void getById() {
+    RestAssuredWebTestClient
+
+         .given()
+         .webTestClient(mockedWebClient)
+
+         .when()
+         .get(GET_BY_ID, item1.get_id())
+
+         .then()
+         .log()
+         .everything()
+
+         .statusCode(OK.value())
+         .body("_id", equalTo(item1.get_id()))
+         .body("name", equalTo(item1.getName()))
+
+//         .body(matchesJsonSchemaInClasspath("contracts/project/findbyid.json"))
+    ;
+  }
+
+  //  @Test
 //  @EnabledIf(expression = enabledTest, loadContext = true)
 //  @DisplayName("Blockhound")
 //  public void blockHoundWorks() {

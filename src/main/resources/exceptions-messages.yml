@@ -1,0 +1,12 @@
+# GLOBAL-EXCEPTION:
+global:
+  exception:
+    developerMessage: Global-Dev-Message
+    globalMessage: Global-General-Message
+
+
+# CUSTOM-EXCEPTION:
+exceptions:
+  messages:
+    item:
+      itemNameIsEmptyMessage: Item name is empty. Try again!!!!

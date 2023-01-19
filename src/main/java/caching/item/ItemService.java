@@ -20,7 +20,4 @@ public interface ItemService {
 
 
   Mono<Void> delete(String id);
-
-
-  Flux<Item> saveTransact(List<Item> itemList);
 }

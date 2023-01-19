@@ -1,9 +1,6 @@
 package caching.config.exceptions;
 
-import com.webflux.api.modules.project.core.exceptions.types.ProjectNameIsEmptyException;
-import com.webflux.api.modules.project.core.exceptions.types.ProjectNotFoundException;
-import com.webflux.api.modules.project.core.exceptions.types.UpdateOptmisticVersionException;
-import com.webflux.api.modules.project.core.exceptions.types.UpdateSimpleException;
+import caching.config.exceptions.types.ItemNameIsEmptyException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -12,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
 
 // ==> EXCEPTIONS IN CONTROLLER:
 // *** REASON: IN WEBFLUX, EXCEPTIONS MUST BE IN CONTROLLER - WHY?
@@ -22,20 +19,20 @@ import static org.springframework.http.HttpStatus.*;
 //     - https://medium.com/nstech/programa%C3%A7%C3%A3o-reativa-com-spring-boot-webflux-e-mongodb-chega-de-sofrer-f92fb64517c3
 @ControllerAdvice(annotations = {RestController.class})
 @AllArgsConstructor
-public class ProjectExceptionsHandler {
+public class ItemExceptionHandler {
 
-  @ExceptionHandler(ProjectNameIsEmptyException.class)
-  public ResponseEntity<?> projectNameIsEmptyException(ProjectNameIsEmptyException exception) {
+  @ExceptionHandler(ItemNameIsEmptyException.class)
+  public ResponseEntity<?> itemNameIsEmptyException(ItemNameIsEmptyException exception) {
 
-    ProjectExceptionsAttributes exceptionAttributes =
-         new ProjectExceptionsAttributes(
+    ItemExceptionsAttributes attributes =
+         new ItemExceptionsAttributes(
               exception.getMessage(),
               exception.getClass()
                        .getName(),
               NOT_ACCEPTABLE.value(),
               new Date().getTime()
          );
-    return new ResponseEntity<>(exceptionAttributes, NOT_ACCEPTABLE);
+    return new ResponseEntity<>(attributes, NOT_ACCEPTABLE);
   }
 
 }

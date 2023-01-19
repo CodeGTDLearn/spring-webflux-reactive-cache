@@ -7,6 +7,8 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotEmpty;
+import java.io.Serial;
+import java.io.Serializable;
 
 @Document
 @AllArgsConstructor
@@ -14,13 +16,17 @@ import javax.validation.constraints.NotEmpty;
 @Getter
 @Setter
 @ToString
-public class Item {
+public class Item  implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = - 2490398103295450213L;
 
     @Id
     private String _id;
 
     @NotEmpty
     private String name;
+
     private double price;
 
     @Version

@@ -1,7 +1,7 @@
 package caching.item;
 
-import caching.config.exceptions.ItemExceptionNameEmpty;
-import caching.config.exceptions.types.ProjectNameIsEmptyException;
+import caching.config.exceptions.ItemExceptionsThrower;
+import caching.config.exceptions.types.ItemNameIsEmptyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -10,10 +10,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import java.util.List;
 
-import static caching.config.routes.ItemRoutes.*;
-import static io.netty.util.internal.StringUtil.isNullOrEmpty;
+import static caching.config.ItemRoutes.*;
 import static org.springframework.http.HttpStatus.*;
 
 
@@ -23,16 +21,17 @@ import static org.springframework.http.HttpStatus.*;
 public class ItemController {
 
   private final ItemService itemService;
+  private final ItemExceptionsThrower itemExceptionsThrower;
 
+  @Transactional
   @PostMapping(SAVE)
   @ResponseStatus(CREATED)
-  public Mono<Item> save(@RequestBody Item item) {
+  public Mono<Item> save(@Valid @RequestBody Item item) {
 
-    return
-         itemService
-              .save(item)
-//              .doOnNext(this::throwSimpleExceptionWhenEmptyName)
-         ;
+    return itemService
+         .save(item)
+         .onErrorResume(this::exceptionSelector);
+
   }
 
   @Transactional
@@ -40,16 +39,15 @@ public class ItemController {
   @ResponseStatus(OK)
   public Mono<Item> update(@RequestBody Item item) {
 
-    return
-         itemService
-              .update(item)
-                       .doOnNext(this::throwSimpleExceptionWhenEmptyName)
-         ;
+    return itemService
+         .update(item)
+         .onErrorResume(this::exceptionSelector);
   }
 
   @GetMapping(GET_BY_ID)
   @ResponseStatus(OK)
-  public Mono<Item> getById(@RequestParam String id) {
+  public Mono<Item> getById(@PathVariable String id) {
+
     return itemService.getById(id);
   }
 
@@ -62,32 +60,17 @@ public class ItemController {
 
   @DeleteMapping(DELETE)
   @ResponseStatus(NO_CONTENT)
-  public Mono<Void> delete(@PathVariable String id){
+  public Mono<Void> delete(@PathVariable String id) {
+
     return itemService.delete(id);
   }
 
-  @Transactional
-  @PostMapping(SAVE_ROLLBACK)
-  @ResponseStatus(CREATED)
-  public Flux<Item> saveRollback(@Valid @RequestBody List<Item> userList) {
 
-    return
-         itemService
-              .saveTransact(userList)
-              .onErrorResume(error -> {
-                               if (error instanceof ProjectNameIsEmptyException) {
-                                 return projectThrower.throwProjectNameIsEmptyException();
-                               }
-                               return Mono.error(new ResponseStatusException(NOT_FOUND));
-                             }
-              )
-         ;
-  }
+  private Mono<Item> exceptionSelector(Throwable error) {
 
-  private void throwSimpleExceptionWhenEmptyName(Item user) {
+    if (error instanceof ItemNameIsEmptyException)
+      return itemExceptionsThrower.throwsItemNameIsEmptyException();
 
-    if (isNullOrEmpty(user.getName())) {
-      throw new ItemExceptionNameEmpty(BAD_REQUEST, "Fail: Empty Name");
-    }
+    return Mono.error(new ResponseStatusException(NOT_FOUND));
   }
 }

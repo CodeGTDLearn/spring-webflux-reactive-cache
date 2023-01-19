@@ -44,10 +44,4 @@ public class ItemServiceImpl implements ItemService {
 
     return itemDAOCrud.deleteById(id);
   }
-
-  @Override
-  public Flux<Item> saveTransact(List<Item> itemList) {
-
-    return itemDAOCrud.saveAll(itemList);
-  }
 }

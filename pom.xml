@@ -60,6 +60,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <version>2.6.4</version>
         </dependency>
 
         <dependency>
@@ -74,17 +75,12 @@
         <!--╔══════════════════════════════╗
             ║     GENERAL DEPENDENCIES     ║
             ╚══════════════════════════════╝-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+            <version>1.18.24</version>
         </dependency>
 
 
@@ -95,6 +91,7 @@
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
+            <version>3.4.15</version>
         </dependency>
 
         <dependency>
