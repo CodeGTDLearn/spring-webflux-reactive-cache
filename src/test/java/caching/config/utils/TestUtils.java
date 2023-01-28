@@ -2,7 +2,6 @@ package caching.config.utils;
 
 import io.restassured.module.webtestclient.RestAssuredWebTestClient;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.util.Arrays;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -109,42 +108,40 @@ public class TestUtils {
 
     public static void main(String[] args) {
 
-      fullPanel(21, 5, 3, 3,
-                "myTitcccle",
-                "myBoxxxdy", "myBvvy2", "myBvvy2"
+      fullPanel(
+           21,
+           5,
+           3,
+           3,
+           true,
+           true,
+           "myTitcc cccc   cccc ccle dddddd", "myBoxxxdy", "myBvvy2", "myBvvy2"
       );
     }
 
-
-    public static void simplePanel(
-         int scale,
-         int margin,
-         int upSpace,
-         int downSpace,
-         String... titleAndOthers) {
+    public static void simplePanel(String... texts) {
 
       fullPanel(
            21,
            5,
            1,
            1,
-           titleAndOthers
+           true,
+           true,
+           texts
       );
     }
 
-    public static void simplePanelWithSize(
-         int scale,
-         int margin,
-         int upSpace,
-         int downSpace,
-         String... titleAndOthers) {
+    public static void simplePanelWithScale(int scale, String... texts) {
 
       fullPanel(
            scale,
            5,
            1,
            1,
-           titleAndOthers
+           true,
+           true,
+           texts
       );
     }
 
@@ -153,15 +150,27 @@ public class TestUtils {
          int margin,
          int upSpace,
          int downSpace,
+         boolean uppercaseTitle,
+         boolean centralizeTitle,
          String... titleAndOthers) {
 
-           Stream.of(titleAndOthers)
-                .filter(title -> title.equals(titleAndOthers[0]))
-                .map(String::toUpperCase)
-                .map(tile -> {
-                  return Arrays.array(tile, Arrays.toString(titleAndOthers));
-                })
-                .forEach(System.out::println);
+      var estimatedAdjustmentFactor = 3;
+      var title = titleAndOthers[0];
+      var marginTitle = scale - (title.length() / 2) - estimatedAdjustmentFactor;
+      var formattedTexts =
+           Stream
+                .of(titleAndOthers)
+                .map(item ->
+                          item.equals(title) &&
+                          centralizeTitle ?
+                               " ".repeat(marginTitle) + title :
+                               item)
+                .map(item ->
+                          item.equals(title) &&
+                          uppercaseTitle ?
+                               item.toUpperCase() :
+                               item)
+                .toArray();
 
       var marginLimitedBySize = Math.min(margin, scale);
 
@@ -173,81 +182,100 @@ public class TestUtils {
       if (fullSize % 2 == 0) ++ fullSize;
       else -- fullSize;
 
-      var internalTextSpace = String.valueOf(fullSize);
+      var internalTextArea = String.valueOf(fullSize);
 
-      var marginAsString = " ".repeat(marginLimitedBySize);
-      var upperSpace = "\n".repeat(upSpace);
-      var lowerSpace = "\n".repeat(downSpace);
-      var baseline =
+      var marginAsWhitespaces = " ".repeat(marginLimitedBySize);
+      var upperExternalSpaces = "\n".repeat(upSpace);
+      var bottomExternalSpaces = "\n".repeat(downSpace);
+      var drawline =
            "_".repeat(scale)
-              .replace('_', mixedStyle.BASE_LINE.code);
+              .replace('_', MixedStyle.BASE_LINE.code);
 
       var divider =
            "_".repeat(scale)
-              .replace('_', mixedStyle.BASE_LINE_BOLD.code);
+              .replace('_', MixedStyle.BASE_LINE_BOLD.code);
 
-      var upperLine = upperLineGenerator(baseline, borderStyle.MIXED);
-      var middleLine = middleLineGenerator(divider, borderStyle.MIXED);
-      var bottomLine = bottomLineGenerator(baseline, borderStyle.MIXED);
+      var upperBorderLine = upperLineGenerator(drawline, BorderStyle.MIXED);
+      var middleBorderLine = middleLineGenerator(divider, BorderStyle.MIXED);
+      var bottomBorderLine = bottomLineGenerator(drawline, BorderStyle.MIXED);
 
       var builder = new StringBuilder();
       builder
-           .append(upperSpace)
-           .append(upperLine)
-
-           .append(mixedStyle.MIDDLE_FACE.code)
-           .append("%s%%-%ss".formatted(marginAsString, internalTextSpace))
-           .append(mixedStyle.MIDDLE_FACE.code)
+           .append(upperExternalSpaces)
+           .append(upperBorderLine)
+           .append(MixedStyle.MIDDLE_FACE.code)
+           .append("%s%%-%ss".formatted(marginAsWhitespaces, internalTextArea))
+           .append(MixedStyle.MIDDLE_FACE.code)
            .append("\n")
-           .append(middleLine)
+           .append(middleBorderLine)
       ;
 
       // "-1" Because the first element in the Array was used as title
-      for (int i = titleAndOthers.length - 1; i > 0; i--)
+      for (int i = formattedTexts.length - 1; i > 0; i--)
         builder
-             .append(mixedStyle.MIDDLE_FACE.code)
-             .append("%s%%-%ss".formatted(marginAsString, internalTextSpace))
-             .append(mixedStyle.MIDDLE_FACE.code)
+             .append(MixedStyle.MIDDLE_FACE.code)
+             .append("%s%%-%ss".formatted(marginAsWhitespaces, internalTextArea))
+             .append(MixedStyle.MIDDLE_FACE.code)
              .append("\n");
 
       builder
-           .append(bottomLine)
-           .append(lowerSpace);
-      System.out.printf(builder.toString(), (Object[]) titleAndOthers);
+           .append(bottomBorderLine)
+           .append(bottomExternalSpaces);
+      System.out.printf(builder.toString(), formattedTexts);
+      xxxxx(bottomBorderLine,BorderStyle.BOLD);
     }
 
     @NotNull
-    private static String bottomLineGenerator(String baseline, borderStyle style) {
+    private static String bottomLineGenerator(String baseline, BorderStyle style) {
 
       return
-           mixedStyle.LOWER_LEFT_CORNER.code + baseline +
-           mixedStyle.MIDDLE_CENTER.code + baseline +
-           mixedStyle.LOWER_RIGHT_CORNER.code + "\n";
+           MixedStyle.LOWER_LEFT_CORNER.code + baseline +
+           MixedStyle.MIDDLE_CENTER.code + baseline +
+           MixedStyle.LOWER_RIGHT_CORNER.code + "\n";
     }
 
     @NotNull
-    private static String middleLineGenerator(String divider, borderStyle style) {
+    private static String middleLineGenerator(String divider, BorderStyle style) {
 
       return
-           mixedStyle.MIDDLE_LEFT.code + divider +
-           mixedStyle.MIDDLE_CENTER.code + divider +
-           mixedStyle.MIDDLE_RIGHT.code + "\n";
+           MixedStyle.MIDDLE_LEFT.code + divider +
+           MixedStyle.MIDDLE_CENTER.code + divider +
+           MixedStyle.MIDDLE_RIGHT.code + "\n";
     }
 
     @NotNull
-    private static String upperLineGenerator(String baseline, borderStyle style) {
+    private static String upperLineGenerator(String baseline, BorderStyle style) {
 
-//      var xx = switch (style) {
-//        BOLD -> boldStyle;
-//        SLIM -> simpleStyle;
-//        DOUBLE -> doubleStyle
-//        default -> mixedStyle;
-//      };
+      //      var xx = switch (style) {
+      //        BOLD -> boldStyle;
+      //        SLIM -> simpleStyle;
+      //        DOUBLE -> doubleStyle
+      //        default -> mixedStyle;
+      //      };
 
       return
-           mixedStyle.UPPER_LEFT_CORNER.code + baseline +
-           mixedStyle.MIDDLE_CENTER.code + baseline +
-           mixedStyle.UPPER_RIGHT_CORNER.code + "\n";
+           MixedStyle.UPPER_LEFT_CORNER.code + baseline +
+           MixedStyle.MIDDLE_CENTER.code + baseline +
+           MixedStyle.UPPER_RIGHT_CORNER.code + "\n";
+    }
+
+    @NotNull
+    private static String xxxxx(String baseline, BorderStyle xx) {
+
+      System.out.println(xx);
+
+      String hhh = switch (xx) {
+        BOLD -> "BoldStyle";
+        SLIM -> "SimpleStyle";
+        DOUBLE -> "DoubleStyle";
+        MIXED -> "DoubleStyle";
+        default -> throw new IllegalStateException("Invalid day: ");
+      };
+
+      return
+           MixedStyle.UPPER_LEFT_CORNER.code + baseline +
+           MixedStyle.MIDDLE_CENTER.code + baseline +
+           MixedStyle.UPPER_RIGHT_CORNER.code + "\n";
     }
 
     private static String simpleLineStyle(String str) {
@@ -282,7 +310,7 @@ public class TestUtils {
                 .replace('|', '\u2502');
     }
 
-    private enum mixedStyle {
+    private enum MixedStyle {
 
       MIDDLE_CENTER('\u2501'),
       BASE_LINE('\u2500'),
@@ -297,13 +325,13 @@ public class TestUtils {
 
       private final char code;
 
-      mixedStyle(char code) {
+      MixedStyle(char code) {
 
         this.code = code;
       }
     }
 
-    private enum boldStyle {
+    private enum BoldStyle {
 
       FACE_LINE('\u2503'),
       BASE_LINE('\u2501'),
@@ -316,13 +344,13 @@ public class TestUtils {
 
       private final char code;
 
-      boldStyle(char code) {
+      BoldStyle(char code) {
 
         this.code = code;
       }
     }
 
-    private enum simpleStyle {
+    private enum SimpleStyle {
 
       FACE_LINE('\u2502'),
       BASE_LINE('\u2500'),
@@ -335,13 +363,13 @@ public class TestUtils {
 
       private final char code;
 
-      simpleStyle(char code) {
+      SimpleStyle(char code) {
 
         this.code = code;
       }
     }
 
-    private enum doubleStyle {
+    private enum DoubleStyle {
 
       FACE_LINE('\u2551'),
       BASE_LINE('\u2550'),
@@ -354,20 +382,18 @@ public class TestUtils {
 
       private final char code;
 
-      doubleStyle(char code) {
+      DoubleStyle(char code) {
 
         this.code = code;
       }
     }
 
-    private enum borderStyle {
+    private enum BorderStyle {
       BOLD,
       MIXED,
       SLIM,
       DOUBLE;
     }
-
-
   }
 
 
