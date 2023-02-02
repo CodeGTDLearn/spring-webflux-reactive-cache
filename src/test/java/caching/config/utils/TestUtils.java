@@ -2,7 +2,6 @@ package caching.config.utils;
 
 import io.restassured.module.webtestclient.RestAssuredWebTestClient;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.DockerComposeContainer;
@@ -34,7 +33,6 @@ public class TestUtils {
 
   public static void globalTestMessage(String subTitle, String testType) {
 
-
     if (subTitle.contains("repetition"))
       subTitle = "Error: Provide TestInfo testInfo.getTestMethod().toString()";
 
@@ -54,14 +52,7 @@ public class TestUtils {
       default -> title = "";
     };
 
-    System.out.printf(
-
-         """
-              ╔════════════════════════════════════════════════════════════════════╗
-              ║    %-30s   |   %-5s                     ║
-              ║ --> Name: %s %38s%n
-              ╚════════════════════════════════════════════════════════════════════╝
-              """, title, "|", subTitle, "║");
+    ConsolePanel.simplePanel(title, subTitle);
   }
 
 
@@ -76,65 +67,95 @@ public class TestUtils {
         default -> title = "";
       }
 
-      System.out.printf(
-           "╔═══════════════════════════════════════════════════════════════════════╗\n" + "║ " + "-->" + " Name: %s\n" + "║ --> Url: %s\n" + "║ --> Running: %s\n" + "╚═══════════════════════════════════════════════════════════════════════╝\n\n",
-           title, container.getContainerName(), container.getReplicaSetUrl(), container.isRunning()
+      ConsolePanel.simplePanel(
+           title,
+           container.getContainerName(),
+           container.getReplicaSetUrl(),
+           "" + container.isRunning()
       );
     }
   }
 
 
-  public static void globalComposeServiceContainerMessage(DockerComposeContainer<?> compose,
-                                                          String service, Integer port) {
+  public static void globalComposeServiceContainerMessage(
+       DockerComposeContainer<?> compose, String service, Integer port) {
 
     if (compose != null) {
-      System.out.printf(
-
-           "╔═══════════════════════════════════════════════════════════════════════\n" + "║     "
-           + "                      %s                        ║\n" + "║ --> Service: %s\n" + "║ " + "--> Host: %s\n" + "║ --> Port: %s\n" + "║ --> Created: %s\n" + "║ --> Running:" + " " + "%s\n" + "╚═══════════════════════════════════════════════════════════════════════\n\n",
-           "TC-CONTAINER-COMPOSE", service, compose.getServiceHost(service, port),
-           compose.getServicePort(service, port), compose.getContainerByServiceName(service + "_1")
-                                                         .get()
-                                                         .isCreated(),
-           compose.getContainerByServiceName(service + "_1")
-                  .get()
-                  .isRunning()
+      ConsolePanel.simplePanel(
+           "TC-CONTAINER-COMPOSE",
+           service,
+           compose.getServiceHost(service, port),
+           compose.getServicePort(service, port)
+                  .toString(),
+           "" + compose.getContainerByServiceName(service + "_1")
+                       .get()
+                       .isCreated(),
+           "" + compose.getContainerByServiceName(service + "_1")
+                       .get()
+                       .isRunning()
       );
     }
   }
 
   private static class ConsolePanel {
 
-    public static void main(String[] args) {
+    public static void simplePanel(String... texts) {
 
-      mainPanel(21, 5, 3, 3, true, true, "myTitcc cccc   cccc ccle dddddd", "myBoxxxdy", "myBvvy2",
-                "myBvvy2"
+      panel(
+           45,
+           5,
+           1,
+           1,
+           Border.DOUBLE,
+           Border.DOUBLE,
+           Border.THIN,
+           Border.THIN,
+           true,
+           true,
+           texts
       );
     }
 
-    public static void simplePanel(String... texts) {
+    public static void simplePanelScalable(int scale, String... texts) {
 
-      mainPanel(21, 5, 1, 1, true, true, texts);
+      panel(
+           scale,
+           5,
+           1,
+           1,
+           Border.DOUBLE,
+           Border.DOUBLE,
+           Border.THIN,
+           Border.THIN,
+           true,
+           true,
+           texts
+      );
     }
 
-    public static void simplePanelWithScale(int scale, String... texts) {
-
-      mainPanel(scale, 5, 1, 1, true, true, texts);
-    }
-
-    public static void mainPanel(int scale, int margin, int upSpace, int downSpace,
-                                 boolean uppercaseTitle, boolean centralizeTitle,
-                                 String... titleAndOthers) {
+    public static void panel(
+         int scale,
+         int margin,
+         int upSpace,
+         int downSpace,
+         Border cornersFormat,
+         Border centerMarksFormat,
+         Border horizontalLinesFormat,
+         Border verticalLinesFormat,
+         boolean uppercaseTitle,
+         boolean centralizeTitle,
+         String... titleAndOthers) {
 
       var estimatedAdjustmentFactor = 3;
       var title = titleAndOthers[0];
       var marginTitle = scale - (title.length() / 2) - estimatedAdjustmentFactor;
-      var formattedTexts = Stream.of(titleAndOthers)
-                                 .map(item -> item.equals(title) && centralizeTitle ? " ".repeat(
-                                      marginTitle) + title : item)
-                                 .map(item -> item.equals(
-                                      title) && uppercaseTitle ? item.toUpperCase() : item)
-                                 .toArray();
+      var formattedTexts =
+           Stream.of(titleAndOthers)
+                 .map(item -> item.equals(title) && centralizeTitle ? " ".repeat(
+                      marginTitle) + title : item)
+                 .map(item -> item.equals(
+                      title) && uppercaseTitle ? item.toUpperCase() : item)
+                 .toArray();
 
       var marginLimitedBySize = Math.min(margin, scale);
 
@@ -146,140 +167,187 @@ public class TestUtils {
       if (fullSize % 2 == 0) ++ fullSize;
       else -- fullSize;
 
-      var internalTextArea = String.valueOf(fullSize);
+      var whitespaceMargin = " ".repeat(marginLimitedBySize);
+      var externalUpSpaces = "\n".repeat(upSpace);
+      var externalBottomSpaces = "\n".repeat(downSpace);
 
-      var marginAsWhitespaces = " ".repeat(marginLimitedBySize);
-      var upperExternalSpaces = "\n".repeat(upSpace);
-      var bottomExternalSpaces = "\n".repeat(downSpace);
-      var baseline = "_".repeat(scale)
-                        .replace('_', ThinFont.BASE_LINE.code);
+      var upperFace = upperLine(scale, cornersFormat, centerMarksFormat, horizontalLinesFormat);
+      var divider = middleLine(scale, cornersFormat, centerMarksFormat, horizontalLinesFormat);
+      var bottomFace = bottomLine(scale, cornersFormat, centerMarksFormat, horizontalLinesFormat);
+      var faceLine = faceLine(verticalLinesFormat);
 
-      var divider = "_".repeat(scale)
-                       .replace('_', BoldFont.BASE_LINE.code);
-
-      var upperBorder = upperLine(baseline, BorderStyle.DOUBLE, BorderStyle.BOLD);
-      var dividerBorder = middleLine(divider, BorderStyle.DOUBLE, BorderStyle.DOUBLE);
-      var bottomBorder = bottomLine(baseline, BorderStyle.DOUBLE, BorderStyle.BOLD);
-
-      var builder = new StringBuilder();
-      builder.append(upperExternalSpaces)
-             .append(upperBorder)
-             .append(ThinFont.FACE_LINE.code)
-             .append("%s%%-%ss".formatted(marginAsWhitespaces, internalTextArea))
-             .append(ThinFont.FACE_LINE.code)
-             .append("\n")
-             .append(dividerBorder);
+      var titleTextArea = String.valueOf(fullSize);
+      var textPreparation = new StringBuilder();
+      textPreparation.append(externalUpSpaces)
+                     .append(upperFace)
+                     .append(faceLine)
+                     .append("%s%%-%ss".formatted(whitespaceMargin, titleTextArea))
+                     .append(faceLine)
+                     .append("\n")
+                     .append(divider);
 
       // "-1" Because the first element in the Array was used as title
-      for (int i = formattedTexts.length - 1; i > 0; i--)
-        builder.append(ThinFont.FACE_LINE.code)
-               .append("%s%%-%ss".formatted(marginAsWhitespaces, internalTextArea))
-               .append(ThinFont.FACE_LINE.code)
-               .append("\n");
-
-      builder.append(bottomBorder)
-             .append(bottomExternalSpaces);
-      System.out.printf(builder.toString(), formattedTexts);
+      // The discont-number in bodyTextArea/fullsize, subtract the size of "ordinal-ASC" and ") "
+      var bodyTextArea = String.valueOf(fullSize - 4);
+      var topicEnumeration = 0;
+      var ordinalSymbolEnumerator = '\u2070';
+      for (int i = formattedTexts.length - 1; i > 0; i--) {
+        ++ topicEnumeration;
+        textPreparation.append(faceLine)
+                       .append("%s%s%s) %%-%ss".formatted(
+                            whitespaceMargin,
+                            topicEnumeration,
+                            ordinalSymbolEnumerator,
+                            bodyTextArea
+                       ))
+                       .append(faceLine)
+                       .append("\n");
+      }
+      textPreparation.append(bottomFace)
+                     .append(externalBottomSpaces);
+      System.out.printf(textPreparation.toString(), formattedTexts);
     }
 
+    private static String generateLine(char baseChar, int scale, char BASE_LINE) {
 
-    @NotNull
+      return
+           String
+                .valueOf(baseChar)
+                .repeat(scale)
+                .replace(baseChar, BASE_LINE);
+    }
+
     private static String upperLine(
-         String baseline,
-         BorderStyle corner,
-         BorderStyle centerMark) {
+         int scale,
+         Border corner,
+         Border centerMark,
+         Border line) {
 
-      ArrayList<Character> myChars = new ArrayList<>();
+      ArrayList<Character> borderStylingItems = new ArrayList<>();
       switch (corner) {
         case BOLD -> {
-          myChars.add(BoldFont.UPPER_LEFT_CORNER.code);
-          myChars.add(BoldFont.UPPER_RIGHT_CORNER.code);
+          borderStylingItems.add(BoldFont.UPPER_LEFT_CORNER.code);
+          borderStylingItems.add(BoldFont.UPPER_RIGHT_CORNER.code);
         }
         case THIN -> {
-          myChars.add(ThinFont.UPPER_LEFT_CORNER.code);
-          myChars.add(ThinFont.UPPER_RIGHT_CORNER.code);
+          borderStylingItems.add(ThinFont.UPPER_LEFT_CORNER.code);
+          borderStylingItems.add(ThinFont.UPPER_RIGHT_CORNER.code);
         }
         case DOUBLE -> {
-          myChars.add(DoubleFont.UPPER_LEFT_CORNER.code);
-          myChars.add(DoubleFont.UPPER_RIGHT_CORNER.code);
+          borderStylingItems.add(DoubleFont.UPPER_LEFT_CORNER.code);
+          borderStylingItems.add(DoubleFont.UPPER_RIGHT_CORNER.code);
         }
       }
 
       switch (centerMark) {
-        case BOLD -> myChars.add(BoldFont.BASE_LINE.code);
-        case THIN -> myChars.add(ThinFont.BASE_LINE.code);
-        case DOUBLE -> myChars.add(DoubleFont.BASE_LINE.code);
+        case BOLD -> borderStylingItems.add(BoldFont.BASE_LINE.code);
+        case THIN -> borderStylingItems.add(ThinFont.BASE_LINE.code);
+        case DOUBLE -> borderStylingItems.add(DoubleFont.BASE_LINE.code);
       }
 
-      return myChars.get(0) + baseline +
-             myChars.get(2) + baseline +
-             myChars.get(1) + "\n";
+      switch (line) {
+        case BOLD -> borderStylingItems.add(BoldFont.BASE_LINE.code);
+        case THIN -> borderStylingItems.add(ThinFont.BASE_LINE.code);
+        case DOUBLE -> borderStylingItems.add(DoubleFont.BASE_LINE.code);
+      }
+
+      var baseline = generateLine('_', scale, borderStylingItems.get(3));
+
+      return borderStylingItems.get(0) + baseline +
+             borderStylingItems.get(2) + baseline +
+             borderStylingItems.get(1) + "\n";
     }
 
-    @NotNull
     private static String middleLine(
-         String baseline,
-         BorderStyle corner,
-         BorderStyle centerMark) {
+         int scale,
+         Border corner,
+         Border centerMark,
+         Border baseLine
+    ) {
 
-      ArrayList<Character> myChars = new ArrayList<>();
+      ArrayList<Character> borderStylingItems = new ArrayList<>();
       switch (corner) {
         case BOLD -> {
-          myChars.add(BoldFont.MIDDLE_LEFT.code);
-          myChars.add(BoldFont.MIDDLE_RIGHT.code);
+          borderStylingItems.add(BoldFont.MIDDLE_LEFT.code);
+          borderStylingItems.add(BoldFont.MIDDLE_RIGHT.code);
         }
         case THIN -> {
-          myChars.add(ThinFont.MIDDLE_LEFT.code);
-          myChars.add(ThinFont.MIDDLE_RIGHT.code);
+          borderStylingItems.add(ThinFont.MIDDLE_LEFT.code);
+          borderStylingItems.add(ThinFont.MIDDLE_RIGHT.code);
         }
         case DOUBLE -> {
-          myChars.add(DoubleFont.MIDDLE_LEFT.code);
-          myChars.add(DoubleFont.MIDDLE_RIGHT.code);
+          borderStylingItems.add(DoubleFont.MIDDLE_LEFT.code);
+          borderStylingItems.add(DoubleFont.MIDDLE_RIGHT.code);
         }
       }
 
       switch (centerMark) {
-        case BOLD -> myChars.add(BoldFont.BASE_LINE.code);
-        case THIN -> myChars.add(ThinFont.BASE_LINE.code);
-        case DOUBLE -> myChars.add(DoubleFont.BASE_LINE.code);
+        case BOLD -> borderStylingItems.add(BoldFont.BASE_LINE.code);
+        case THIN -> borderStylingItems.add(ThinFont.BASE_LINE.code);
+        case DOUBLE -> borderStylingItems.add(DoubleFont.BASE_LINE.code);
       }
 
-      return myChars.get(0) + baseline +
-             myChars.get(2) + baseline +
-             myChars.get(1) + "\n";
+      switch (baseLine) {
+        case BOLD -> borderStylingItems.add(BoldFont.BASE_LINE.code);
+        case THIN -> borderStylingItems.add(ThinFont.BASE_LINE.code);
+        case DOUBLE -> borderStylingItems.add(DoubleFont.BASE_LINE.code);
+      }
+
+      var divider = generateLine('_', scale, borderStylingItems.get(3));
+
+      return borderStylingItems.get(0) + divider +
+             borderStylingItems.get(2) + divider +
+             borderStylingItems.get(1) + "\n";
     }
 
-    @NotNull
     private static String bottomLine(
-         String baseline,
-         BorderStyle corner,
-         BorderStyle centerMark) {
+         int scale,
+         Border corner,
+         Border centerMark,
+         Border baseLine) {
 
-      ArrayList<Character> myChars = new ArrayList<>();
+      ArrayList<Character> borderStylingItems = new ArrayList<>();
       switch (corner) {
         case BOLD -> {
-          myChars.add(BoldFont.LOWER_LEFT_CORNER.code);
-          myChars.add(BoldFont.LOWER_RIGHT_CORNER.code);
+          borderStylingItems.add(BoldFont.LOWER_LEFT_CORNER.code);
+          borderStylingItems.add(BoldFont.LOWER_RIGHT_CORNER.code);
         }
         case THIN -> {
-          myChars.add(ThinFont.LOWER_LEFT_CORNER.code);
-          myChars.add(ThinFont.LOWER_RIGHT_CORNER.code);
+          borderStylingItems.add(ThinFont.LOWER_LEFT_CORNER.code);
+          borderStylingItems.add(ThinFont.LOWER_RIGHT_CORNER.code);
         }
         case DOUBLE -> {
-          myChars.add(DoubleFont.LOWER_LEFT_CORNER.code);
-          myChars.add(DoubleFont.LOWER_RIGHT_CORNER.code);
+          borderStylingItems.add(DoubleFont.LOWER_LEFT_CORNER.code);
+          borderStylingItems.add(DoubleFont.LOWER_RIGHT_CORNER.code);
         }
       }
 
       switch (centerMark) {
-        case BOLD -> myChars.add(BoldFont.BASE_LINE.code);
-        case THIN -> myChars.add(ThinFont.BASE_LINE.code);
-        case DOUBLE -> myChars.add(DoubleFont.BASE_LINE.code);
+        case BOLD -> borderStylingItems.add(BoldFont.BASE_LINE.code);
+        case THIN -> borderStylingItems.add(ThinFont.BASE_LINE.code);
+        case DOUBLE -> borderStylingItems.add(DoubleFont.BASE_LINE.code);
       }
 
-      return myChars.get(0) + baseline +
-             myChars.get(2) + baseline +
-             myChars.get(1) + "\n";
+      switch (baseLine) {
+        case BOLD -> borderStylingItems.add(BoldFont.BASE_LINE.code);
+        case THIN -> borderStylingItems.add(ThinFont.BASE_LINE.code);
+        case DOUBLE -> borderStylingItems.add(DoubleFont.BASE_LINE.code);
+      }
+
+      var baseline = generateLine('_', scale, borderStylingItems.get(3));
+
+      return borderStylingItems.get(0) + baseline +
+             borderStylingItems.get(2) + baseline +
+             borderStylingItems.get(1) + "\n";
+    }
+
+    private static Character faceLine(Border corner) {
+
+      return switch (corner) {
+        case BOLD -> BoldFont.FACE_LINE.code;
+        case THIN -> ThinFont.FACE_LINE.code;
+        case DOUBLE -> DoubleFont.FACE_LINE.code;
+      };
     }
 
     private enum BoldFont {
@@ -339,41 +407,8 @@ public class TestUtils {
       }
     }
 
-    private enum BorderStyle {
+    private enum Border {
       BOLD, THIN, DOUBLE
     }
   }
-
-
 }
-//    private static String simpleLineStyle(String str) {
-//
-//      return str.replace('a', '\u250c')
-//                .replace('b', '\u252c')
-//                .replace('c', '\u2510')
-//                .replace('d', '\u251c')
-//                .replace('e', '\u253c')
-//                .replace('f', '\u2524')
-//                .replace('g', '\u2514')
-//                .replace('h', '\u2534')
-//                .replace('i', '\u2518')
-//                .replace('_', '\u2500')
-//                .replace('|', '\u2502');
-//    }
-//
-//    private static String mixedLineStyle(String str) {
-//      //source: https://en.wikipedia.org/wiki/Box-drawing_character
-//      return str.replace('a', '\u250F')
-//                .replace('b', '\u252c')
-//                .replace('c', '\u2513')
-//                .replace('d', '\u2523')
-//                .replace('e', '\u253c')
-//                .replace('f', '\u252B')
-//                .replace('g', '\u2517')
-//                .replace('h', '\u2534')
-//                .replace('i', '\u251B')
-//                .replace('-', '\u2501')
-//                .replace('_', '\u2500')
-//                .replace('*', '\u2501')
-//                .replace('|', '\u2502');
-//    }
