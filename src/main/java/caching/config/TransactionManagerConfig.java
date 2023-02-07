@@ -20,7 +20,7 @@ import org.springframework.data.mongodb.ReactiveMongoTransactionManager;
 public class TransactionManagerConfig {
 
   @Bean
-  ReactiveMongoTransactionManager transactionManager(ReactiveMongoDatabaseFactory factory) {
+  ReactiveMongoTransactionManager manager(ReactiveMongoDatabaseFactory factory) {
 
     return new ReactiveMongoTransactionManager(factory);
   }

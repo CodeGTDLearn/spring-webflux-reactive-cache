@@ -100,14 +100,15 @@
   * MongoDb StandAlone
 
 ### Tests Junit 5
-1. ConsoleLog Border
-2. StepVerifier
-3. RestAssured:
+1. ConsoleLog Panel
+2. Global Messages Refactored
+3. StepVerifier
+4. RestAssured:
     1. RestAssuredWebTestClient:
         1. Reactive RestAssured
     2. JsonSchemaValidator - CDD Contracts Driven Development
         1. Validate Responses
-4. Spring Expression Language (SpEL) expressions:
+5. Spring Expression Language (SpEL) expressions:
    1. EnabledIf + SpEL
       2. [spring-5-enabledIf](https://www.baeldung.com/spring-5-enabledIf)
       3. [junit-5-conditional-test-execution](https://www.baeldung.com/junit-5-conditional-test-execution)

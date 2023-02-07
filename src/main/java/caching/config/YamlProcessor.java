@@ -19,15 +19,14 @@ import java.util.Properties;
 public class YamlProcessor implements PropertySourceFactory {
 
   @Override
-  public PropertySource<?> createPropertySource(String name, EncodedResource encodedResource)
+  public PropertySource<?> createPropertySource(String name, EncodedResource resource)
        throws IOException {
 
     YamlPropertiesFactoryBean factory = new YamlPropertiesFactoryBean();
-    factory.setResources(encodedResource.getResource());
+    factory.setResources(resource.getResource());
 
     Properties properties = factory.getObject();
 
-    return new PropertiesPropertySource(encodedResource.getResource()
-                                                       .getFilename(), properties);
+    return new PropertiesPropertySource(resource.getResource().getFilename(), properties);
   }
 }

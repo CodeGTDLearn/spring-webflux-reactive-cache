@@ -4,7 +4,6 @@ package caching.item;
 import caching.config.testcontainter.TcContainerReplicaset;
 import caching.config.utils.DbUtilsConfig;
 import caching.config.utils.TestDbUtils;
-import io.restassured.module.webtestclient.RestAssuredWebTestClient;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -24,6 +23,7 @@ import static caching.config.databuilders.ItemBuilder.itemWithID;
 import static caching.config.databuilders.ItemBuilder.itemWithoutID;
 import static caching.config.utils.RestAssureSpecs.*;
 import static caching.config.utils.TestUtils.*;
+import static io.restassured.module.webtestclient.RestAssuredWebTestClient.*;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -84,8 +84,10 @@ public class ItemControllerTest {
 
   final static String enabledTest = "true";
 
+  final static String LOCAL_HOST = "http://localhost:8080";
+
   @Autowired
-  WebTestClient mockedWebClient;
+  WebTestClient client;
 
   @Autowired
   TestDbUtils dbUtils;
@@ -96,8 +98,9 @@ public class ItemControllerTest {
   private Item item1, item2;
   private Item itemNoId;
 
+
   @BeforeAll
-  static void beforeAll(TestInfo testInfo) {
+  static void beforeAll(TestInfo info) {
     /*╔══════════════════════════╗
       ║        BLOCKHOUND        ║
       ╠══════════════════════════╣
@@ -111,26 +114,25 @@ public class ItemControllerTest {
     System.setProperty("runTest", enabledTest);
 
     globalBeforeAll();
-    globalTestMessage(testInfo.getDisplayName(), "class-start");
-    RestAssuredWebTestClient.reset();
-    RestAssuredWebTestClient.requestSpecification = requestSpecsSetPath(
-         "http://localhost:8080" + ROOT);
-    RestAssuredWebTestClient.responseSpecification = responseSpecs();
+    globalTestMessage(info.getDisplayName(), "class-start");
+    reset();
+
+    requestSpecification = requestSpecsSetPath(LOCAL_HOST + ROOT);
+    responseSpecification = responseSpecs();
   }
 
   @AfterAll
-  static void afterAll(TestInfo testInfo) {
+  static void afterAll(TestInfo info) {
 
     globalAfterAll();
-    globalTestMessage(testInfo.getDisplayName(), "class-end");
+    globalTestMessage(info.getDisplayName(), "class-end");
     //    closeTcContainer();
   }
 
   @BeforeEach
-  void beforeEach(TestInfo testInfo) {
+  void beforeEach(TestInfo info) {
 
-    globalTestMessage(testInfo.getTestMethod()
-                              .toString(), "method-start");
+    globalTestMessage(info.getDisplayName(), "method-start");
 
     item1 = itemWithoutID().create();
     item2 = itemWithoutID().create();
@@ -142,10 +144,9 @@ public class ItemControllerTest {
   }
 
   @AfterEach
-  void tearDown(TestInfo testInfo) {
+  void afterEach(TestInfo info) {
 
-    globalTestMessage(testInfo.getTestMethod()
-                              .toString(), "method-end");
+    globalTestMessage(info.getDisplayName(), "method-end");
   }
 
   @Test
@@ -153,14 +154,12 @@ public class ItemControllerTest {
   @DisplayName("1 Delete")
   public void delete() {
 
-    RestAssuredWebTestClient.responseSpecification = noContentTypeAndVoidResponses();
+    responseSpecification = noContentTypeAndVoidResponses();
 
     dbUtils.countAndExecuteFlux(itemService.findAll(), 2);
 
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
+    given()
+         .webTestClient(client)
 
          .when()
          .delete(DELETE, item1.get_id())
@@ -182,10 +181,8 @@ public class ItemControllerTest {
     dbUtils.checkFluxListElements(itemService.findAll()
                                              .flatMap(Flux::just), asList(item1, item2));
 
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
+    given()
+         .webTestClient(client)
 
          .when()
          .get(FIND_ALL)
@@ -209,10 +206,8 @@ public class ItemControllerTest {
   @DisplayName("3 FindById")
   public void findById() {
 
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
+    given()
+         .webTestClient(client)
 
          .when()
          .get(FIND_BY_ID, item1.get_id())
@@ -237,10 +232,8 @@ public class ItemControllerTest {
 
     itemNoId = itemWithoutID().create();
 
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
+    given()
+         .webTestClient(client)
          .body(itemNoId)
 
          .when()
@@ -266,10 +259,8 @@ public class ItemControllerTest {
     Item item = itemWithoutID().create();
     item.setName("");
 
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
+    given()
+         .webTestClient(client)
          .body(item)
 
          .when()
@@ -295,10 +286,8 @@ public class ItemControllerTest {
 
     Item userIsolated = itemWithID().create();
 
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
+    given()
+         .webTestClient(client)
 
          .body(userIsolated)
 
@@ -311,7 +300,8 @@ public class ItemControllerTest {
 
          .statusCode(CREATED.value())
          .body("name", equalTo(userIsolated.getName()))
-    //         .body(matchesJsonSchemaInClasspath("contracts/save.json"))
+         .body("version", is(0))
+         // .body(matchesJsonSchemaInClasspath("contracts/save.json"))
     ;
 
     dbUtils.countAndExecuteFlux(itemService.findAll(), 3);
@@ -335,10 +325,8 @@ public class ItemControllerTest {
     var newName = "NewName";
     item1.setName(newName);
 
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
+    given()
+         .webTestClient(client)
 
          .body(item1)
 

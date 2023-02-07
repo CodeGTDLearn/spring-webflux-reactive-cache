@@ -12,6 +12,8 @@ import java.util.stream.Stream;
 
 import static caching.config.utils.RestAssureSpecs.requestSpecs;
 import static caching.config.utils.RestAssureSpecs.responseSpecs;
+import static java.lang.String.*;
+import static java.lang.String.valueOf;
 
 @Slf4j
 public class TestUtils {
@@ -31,74 +33,56 @@ public class TestUtils {
   }
 
 
-  public static void globalTestMessage(String subTitle, String testType) {
+  public static void globalTestMessage(String content, String testType) {
 
     final String error = "Error: Provide TestInfo testInfo.getTestMethod().toString()";
-
-    final String subTitleEdited =
-         Stream.of(subTitle)
-               .map(checkError -> checkError.contains("repetition") ?
-                    error : checkError)
+    // @formatter:off
+    var contentEdited =
+         Stream.of(content)
+               .map(check -> check.contains("repetition") ? error : check)
                .map(text -> {
                  var check = text.contains("()]") & ! text.contains("repetition");
-                 if (check) {
-                   text = text.replace("()]", "");
-                   text = text.substring(text.lastIndexOf(".") + 1);
-                   text = text.substring(0, 1)
-                              .toUpperCase() + text.substring(1);
-                   return text;
-                 }
+                 if (check) return text
+                      .transform(txt -> txt.replace("()]", ""))
+                      .transform(txt -> txt.substring(text.lastIndexOf(".") + 1))
+                      .transform(txt -> txt.substring(0, 1).toUpperCase() + txt.substring(1));
                  return text;
                })
-               .toString();
-/*
-
-╔──────────────────────────────────────────────═──────────────────────────────────────────────╗
-│                                   STARTING TEST-METHOD...                                   │
-╠──────────────────────────────────────────────═──────────────────────────────────────────────╣
-│    1⁰) java.util.stream.ReferencePipeline$3@40e420fe       //erro                           │
-╚──────────────────────────────────────────────═──────────────────────────────────────────────╝
- */
-    //    if (subTitle.contains("repetition")) {
-    //      subTitle = error;
-    //    }
-    //
-    //    if (subTitle.contains("()]"))
-    //      subTitle = subTitle.replace("()]", "");
-    //    subTitle = subTitle.substring(subTitle.lastIndexOf(".") + 1);
-    //    subTitle = subTitle.substring(0, 1)
-    //                       .toUpperCase() + subTitle.substring(1);
+               .findAny()
+               .get();
+    // @formatter:on
 
     String title = switch (testType.toLowerCase()) {
       case "class-start" -> " STARTING TEST-CLASS...";
       case "class-end" -> "...FINISHED TEST-CLASS ";
       case "method-start" -> "STARTING TEST-METHOD...";
       case "method-end" -> "...FINISHED TEST-METHOD";
-      default -> title = "";
+      default -> "";
     };
 
-    //    ConsolePanel.simplePanel(title, subTitle);
-    ConsolePanel.simplePanel(title, subTitleEdited);
+    ConsolePanel.simplePanel(title, contentEdited);
   }
 
 
   public static void globalContainerMessage(MongoDBContainer container, String typeTestMessage) {
 
-    if (container != null) {
-      String title = switch (typeTestMessage.toLowerCase()) {
-        case "container-start" -> "STARTING TEST-CONTAINER...";
-        case "container-end" -> "...FINISHED TEST-CONTAINER";
-        case "container-state" -> "  ...TEST'S TC-CONTAINER  ";
-        default -> "";
-      };
+    // @formatter:off
+    if (container == null) return;
 
-      ConsolePanel.simplePanel(
-           title,
-           container.getContainerName(),
-           container.getReplicaSetUrl(),
-           "" + container.isRunning()
-      );
-    }
+    String title = switch (typeTestMessage.toLowerCase()) {
+      case "container-start" -> "STARTING TEST-CONTAINER...";
+      case "container-end" -> "...FINISHED TEST-CONTAINER";
+      case "container-state" -> "  ...TEST'S TC-CONTAINER  ";
+      default -> "";
+    };
+
+    ConsolePanel.simplePanel(
+         title,
+         container.getContainerName().transform("Name: "::concat),
+         container.getReplicaSetUrl().transform("Url: "::concat),
+         "Running: ".concat(valueOf(container.isRunning())));
+    // @formatter:on
+
   }
 
 
@@ -107,18 +91,19 @@ public class TestUtils {
        String service,
        Integer port) {
 
-    if (compose != null) {
-      var containerByService = compose.getContainerByServiceName(service + "_1")
-                                      .get();
-      ConsolePanel
-           .simplePanel("TC-CONTAINER-COMPOSE", service,
-                        compose.getServiceHost(service, port),
-                        compose.getServicePort(service, port)
-                               .toString(),
-                        String.valueOf(containerByService.isCreated()),
-                        String.valueOf(containerByService.isRunning())
-           );
-    }
+    // @formatter:off
+    if (compose == null) return;
+
+    var container = compose.getContainerByServiceName(service + "_1").get();
+    ConsolePanel
+         .simplePanel("TC-CONTAINER-COMPOSE",
+                      service,
+                      compose.getServiceHost(service, port),
+                      compose.getServicePort(service, port).toString(),
+                      "Created: ".concat(valueOf(container.isCreated())),
+                      "Running: ".concat(valueOf(container.isRunning()))
+         );
+    // @formatter:on
   }
 
   private static class ConsolePanel {
@@ -170,7 +155,7 @@ public class TestUtils {
       var bottomFace = bottomLine(scale, cornersFormat, centerMarksFormat, horizontalLinesFormat);
       var faceLine = faceLine(verticalLinesFormat);
 
-      var titleTextArea = String.valueOf(fullSize);
+      var titleTextArea = valueOf(fullSize);
       var textPreparation = new StringBuilder();
       textPreparation.append(externalUpSpaces)
                      .append(upperFace)
@@ -182,7 +167,7 @@ public class TestUtils {
 
       // "-1" Because the first element in the Array was used as title
       // The discont-number in bodyTextArea/fullsize, subtract the size of "ordinal-ASC" and ") "
-      var bodyTextArea = String.valueOf(fullSize - 4);
+      var bodyTextArea = valueOf(fullSize - 4);
       var topicEnumeration = 0;
       var ordinalSymbolEnumerator = '\u2070';
       for (int i = formattedTexts.length - 1; i > 0; i--) {
@@ -201,9 +186,9 @@ public class TestUtils {
 
     private static String generateLine(char baseChar, int scale, char BASE_LINE) {
 
-      return String.valueOf(baseChar)
-                   .repeat(scale)
-                   .replace(baseChar, BASE_LINE);
+      return valueOf(baseChar)
+           .repeat(scale)
+           .replace(baseChar, BASE_LINE);
     }
 
     private static String upperLine(int scale, Border corner, Border centerMark, Border line) {

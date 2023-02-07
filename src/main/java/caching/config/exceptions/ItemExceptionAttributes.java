@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ItemExceptionsAttributes {
+public class ItemExceptionAttributes {
   private String detail;
   private String classType;
   private int status;

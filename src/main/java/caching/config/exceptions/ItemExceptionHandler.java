@@ -26,8 +26,8 @@ public class ItemExceptionHandler {
   @ExceptionHandler(ItemNameIsEmptyException.class)
   public ResponseEntity<?> itemNameIsEmptyException(ItemNameIsEmptyException exception) {
 
-    ItemExceptionsAttributes attributes =
-         new ItemExceptionsAttributes(
+    ItemExceptionAttributes attributes =
+         new ItemExceptionAttributes(
               exception.getMessage(),
               exception.getClass()
                        .getName(),
@@ -40,8 +40,8 @@ public class ItemExceptionHandler {
   @ExceptionHandler(ItemNotFoundException.class)
   public ResponseEntity<?> ItemNotFoundException(ItemNotFoundException exception) {
 
-    ItemExceptionsAttributes attributes =
-         new ItemExceptionsAttributes(
+    ItemExceptionAttributes attributes =
+         new ItemExceptionAttributes(
               exception.getMessage(),
               exception.getClass()
                        .getName(),

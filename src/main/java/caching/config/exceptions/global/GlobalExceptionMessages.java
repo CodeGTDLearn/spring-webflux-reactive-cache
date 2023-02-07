@@ -23,11 +23,11 @@ import org.springframework.context.annotation.PropertySource;
 // - Setter/Getter are CRUCIAL for PropertySource + ConfigurationProperties works properly
 @Getter
 @Setter
-@Configuration
+@Configuration("globalExceptionMessages")
 @ConfigurationProperties(prefix = "global.exception")
 @PropertySource(value = "classpath:exceptions-messages.yml", factory =
      YamlProcessor.class)
-public class GlobalExceptionCustomAttributes {
+public class GlobalExceptionMessages {
 
   // THE BEAN-VALIDATION IS VALIDATING THE MESSAGE-CONTENT
   // THAT COMES FROM THE EXCEPTIONS-MANAGEMENT.PROPERTIES FILE

@@ -26,9 +26,9 @@ import java.util.Map;
 @Getter
 @Setter
 @AllArgsConstructor
-public class GlobalExceptionGeneralAttributes extends DefaultErrorAttributes {
+public class GlobalExceptionAttributes extends DefaultErrorAttributes {
 
-  private GlobalExceptionCustomAttributes attributes;
+  private GlobalExceptionMessages globalExceptionMessages;
 
   @Override
   public Map<String, Object> getErrorAttributes(ServerRequest request,
@@ -65,8 +65,8 @@ public class GlobalExceptionGeneralAttributes extends DefaultErrorAttributes {
       globalAttributes.put("reason", error.getReason());
 
       // C) ADDING Custom-Parameters in the Default-Parameters
-      globalAttributes.put("Global-Global-Atribute", attributes.getGlobalMessage());
-      globalAttributes.put("Global-Dev-Atribute", attributes.getDeveloperMessage());
+      globalAttributes.put("Global-Global-Atribute", globalExceptionMessages.getGlobalMessage());
+      globalAttributes.put("Global-Dev-Atribute", globalExceptionMessages.getDeveloperMessage());
       //      globalAttributes.put("example","example2");
 
       // D) REMOVING Keys/Fields from the Global-Exception-Message

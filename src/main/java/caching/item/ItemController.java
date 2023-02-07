@@ -1,6 +1,6 @@
 package caching.item;
 
-import caching.config.exceptions.ItemExceptionsThrower;
+import caching.config.exceptions.ItemExceptionThrower;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +19,7 @@ import static org.springframework.http.HttpStatus.*;
 public class ItemController {
 
   private final ItemService itemService;
-  private final ItemExceptionsThrower itemExceptionsThrower;
+  private final ItemExceptionThrower itemExceptionsThrower;
 
   @DeleteMapping(DELETE)
   @ResponseStatus(NO_CONTENT)
