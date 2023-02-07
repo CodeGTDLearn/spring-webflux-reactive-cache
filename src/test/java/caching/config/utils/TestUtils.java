@@ -33,16 +33,41 @@ public class TestUtils {
 
   public static void globalTestMessage(String subTitle, String testType) {
 
-    if (subTitle.contains("repetition"))
-      subTitle = "Error: Provide TestInfo testInfo.getTestMethod().toString()";
+    final String error = "Error: Provide TestInfo testInfo.getTestMethod().toString()";
 
-    if (subTitle.contains("()]")) {
-      subTitle = subTitle.replace("()]", "");
-      subTitle = subTitle.substring(subTitle.lastIndexOf(".") + 1);
-      subTitle = subTitle.substring(0, 1)
-                         .toUpperCase() + subTitle.substring(1);
-    }
+    final String subTitleEdited =
+         Stream.of(subTitle)
+               .map(checkError -> checkError.contains("repetition") ?
+                    error : checkError)
+               .map(text -> {
+                 var check = text.contains("()]") & ! text.contains("repetition");
+                 if (check) {
+                   text = text.replace("()]", "");
+                   text = text.substring(text.lastIndexOf(".") + 1);
+                   text = text.substring(0, 1)
+                              .toUpperCase() + text.substring(1);
+                   return text;
+                 }
+                 return text;
+               })
+               .toString();
+/*
 
+╔──────────────────────────────────────────────═──────────────────────────────────────────────╗
+│                                   STARTING TEST-METHOD...                                   │
+╠──────────────────────────────────────────────═──────────────────────────────────────────────╣
+│    1⁰) java.util.stream.ReferencePipeline$3@40e420fe       //erro                           │
+╚──────────────────────────────────────────────═──────────────────────────────────────────────╝
+ */
+    //    if (subTitle.contains("repetition")) {
+    //      subTitle = error;
+    //    }
+    //
+    //    if (subTitle.contains("()]"))
+    //      subTitle = subTitle.replace("()]", "");
+    //    subTitle = subTitle.substring(subTitle.lastIndexOf(".") + 1);
+    //    subTitle = subTitle.substring(0, 1)
+    //                       .toUpperCase() + subTitle.substring(1);
 
     String title = switch (testType.toLowerCase()) {
       case "class-start" -> " STARTING TEST-CLASS...";
@@ -52,20 +77,20 @@ public class TestUtils {
       default -> title = "";
     };
 
-    ConsolePanel.simplePanel(title, subTitle);
+    //    ConsolePanel.simplePanel(title, subTitle);
+    ConsolePanel.simplePanel(title, subTitleEdited);
   }
 
 
   public static void globalContainerMessage(MongoDBContainer container, String typeTestMessage) {
 
     if (container != null) {
-      String title;
-      switch (typeTestMessage.toLowerCase()) {
-        case "container-start" -> title = "STARTING TEST-CONTAINER...";
-        case "container-end" -> title = "...FINISHED TEST-CONTAINER";
-        case "container-state" -> title = "  ...TEST'S TC-CONTAINER  ";
-        default -> title = "";
-      }
+      String title = switch (typeTestMessage.toLowerCase()) {
+        case "container-start" -> "STARTING TEST-CONTAINER...";
+        case "container-end" -> "...FINISHED TEST-CONTAINER";
+        case "container-state" -> "  ...TEST'S TC-CONTAINER  ";
+        default -> "";
+      };
 
       ConsolePanel.simplePanel(
            title,
@@ -78,22 +103,21 @@ public class TestUtils {
 
 
   public static void globalComposeServiceContainerMessage(
-       DockerComposeContainer<?> compose, String service, Integer port) {
+       DockerComposeContainer<?> compose,
+       String service,
+       Integer port) {
 
     if (compose != null) {
-      ConsolePanel.simplePanel(
-           "TC-CONTAINER-COMPOSE",
-           service,
-           compose.getServiceHost(service, port),
-           compose.getServicePort(service, port)
-                  .toString(),
-           "" + compose.getContainerByServiceName(service + "_1")
-                       .get()
-                       .isCreated(),
-           "" + compose.getContainerByServiceName(service + "_1")
-                       .get()
-                       .isRunning()
-      );
+      var containerByService = compose.getContainerByServiceName(service + "_1")
+                                      .get();
+      ConsolePanel
+           .simplePanel("TC-CONTAINER-COMPOSE", service,
+                        compose.getServiceHost(service, port),
+                        compose.getServicePort(service, port)
+                               .toString(),
+                        String.valueOf(containerByService.isCreated()),
+                        String.valueOf(containerByService.isRunning())
+           );
     }
   }
 
@@ -101,61 +125,31 @@ public class TestUtils {
 
     public static void simplePanel(String... texts) {
 
-      panel(
-           45,
-           5,
-           1,
-           1,
-           Border.DOUBLE,
-           Border.DOUBLE,
-           Border.THIN,
-           Border.THIN,
-           true,
-           true,
-           texts
-      );
+      panel(45, 5, 1, 1, Border.DOUBLE, Border.DOUBLE, Border.THIN, Border.THIN, true, true, texts);
     }
 
     public static void simplePanelScalable(int scale, String... texts) {
 
-      panel(
-           scale,
-           5,
-           1,
-           1,
-           Border.DOUBLE,
-           Border.DOUBLE,
-           Border.THIN,
-           Border.THIN,
-           true,
-           true,
-           texts
+      panel(scale, 5, 1, 1, Border.DOUBLE, Border.DOUBLE, Border.THIN, Border.THIN, true, true,
+            texts
       );
     }
 
-    public static void panel(
-         int scale,
-         int margin,
-         int upSpace,
-         int downSpace,
-         Border cornersFormat,
-         Border centerMarksFormat,
-         Border horizontalLinesFormat,
-         Border verticalLinesFormat,
-         boolean uppercaseTitle,
-         boolean centralizeTitle,
-         String... titleAndOthers) {
+    public static void panel(int scale, int margin, int upSpace, int downSpace,
+                             Border cornersFormat, Border centerMarksFormat,
+                             Border horizontalLinesFormat, Border verticalLinesFormat,
+                             boolean uppercaseTitle, boolean centralizeTitle,
+                             String... titleAndOthers) {
 
       var estimatedAdjustmentFactor = 3;
       var title = titleAndOthers[0];
       var marginTitle = scale - (title.length() / 2) - estimatedAdjustmentFactor;
-      var formattedTexts =
-           Stream.of(titleAndOthers)
-                 .map(item -> item.equals(title) && centralizeTitle ? " ".repeat(
-                      marginTitle) + title : item)
-                 .map(item -> item.equals(
-                      title) && uppercaseTitle ? item.toUpperCase() : item)
-                 .toArray();
+      var formattedTexts = Stream.of(titleAndOthers)
+                                 .map(item -> item.equals(title) && centralizeTitle ? " ".repeat(
+                                      marginTitle) + title : item)
+                                 .map(item -> item.equals(
+                                      title) && uppercaseTitle ? item.toUpperCase() : item)
+                                 .toArray();
 
       var marginLimitedBySize = Math.min(margin, scale);
 
@@ -194,11 +188,8 @@ public class TestUtils {
       for (int i = formattedTexts.length - 1; i > 0; i--) {
         ++ topicEnumeration;
         textPreparation.append(faceLine)
-                       .append("%s%s%s) %%-%ss".formatted(
-                            whitespaceMargin,
-                            topicEnumeration,
-                            ordinalSymbolEnumerator,
-                            bodyTextArea
+                       .append("%s%s%s) %%-%ss".formatted(whitespaceMargin, topicEnumeration,
+                                                          ordinalSymbolEnumerator, bodyTextArea
                        ))
                        .append(faceLine)
                        .append("\n");
@@ -210,18 +201,12 @@ public class TestUtils {
 
     private static String generateLine(char baseChar, int scale, char BASE_LINE) {
 
-      return
-           String
-                .valueOf(baseChar)
-                .repeat(scale)
-                .replace(baseChar, BASE_LINE);
+      return String.valueOf(baseChar)
+                   .repeat(scale)
+                   .replace(baseChar, BASE_LINE);
     }
 
-    private static String upperLine(
-         int scale,
-         Border corner,
-         Border centerMark,
-         Border line) {
+    private static String upperLine(int scale, Border corner, Border centerMark, Border line) {
 
       ArrayList<Character> borderStylingItems = new ArrayList<>();
       switch (corner) {
@@ -253,17 +238,11 @@ public class TestUtils {
 
       var baseline = generateLine('_', scale, borderStylingItems.get(3));
 
-      return borderStylingItems.get(0) + baseline +
-             borderStylingItems.get(2) + baseline +
-             borderStylingItems.get(1) + "\n";
+      return borderStylingItems.get(0) + baseline + borderStylingItems.get(
+           2) + baseline + borderStylingItems.get(1) + "\n";
     }
 
-    private static String middleLine(
-         int scale,
-         Border corner,
-         Border centerMark,
-         Border baseLine
-    ) {
+    private static String middleLine(int scale, Border corner, Border centerMark, Border baseLine) {
 
       ArrayList<Character> borderStylingItems = new ArrayList<>();
       switch (corner) {
@@ -295,16 +274,11 @@ public class TestUtils {
 
       var divider = generateLine('_', scale, borderStylingItems.get(3));
 
-      return borderStylingItems.get(0) + divider +
-             borderStylingItems.get(2) + divider +
-             borderStylingItems.get(1) + "\n";
+      return borderStylingItems.get(0) + divider + borderStylingItems.get(
+           2) + divider + borderStylingItems.get(1) + "\n";
     }
 
-    private static String bottomLine(
-         int scale,
-         Border corner,
-         Border centerMark,
-         Border baseLine) {
+    private static String bottomLine(int scale, Border corner, Border centerMark, Border baseLine) {
 
       ArrayList<Character> borderStylingItems = new ArrayList<>();
       switch (corner) {
@@ -336,9 +310,8 @@ public class TestUtils {
 
       var baseline = generateLine('_', scale, borderStylingItems.get(3));
 
-      return borderStylingItems.get(0) + baseline +
-             borderStylingItems.get(2) + baseline +
-             borderStylingItems.get(1) + "\n";
+      return borderStylingItems.get(0) + baseline + borderStylingItems.get(
+           2) + baseline + borderStylingItems.get(1) + "\n";
     }
 
     private static Character faceLine(Border corner) {
@@ -352,14 +325,9 @@ public class TestUtils {
 
     private enum BoldFont {
 
-      FACE_LINE('\u2503'),
-      BASE_LINE('\u2501'),
-      UPPER_LEFT_CORNER('\u250F'),
-      UPPER_RIGHT_CORNER('\u2513'),
-      MIDDLE_LEFT('\u2523'),
-      MIDDLE_RIGHT('\u252B'),
-      LOWER_LEFT_CORNER('\u2517'),
-      LOWER_RIGHT_CORNER('\u251B');
+      FACE_LINE('\u2503'), BASE_LINE('\u2501'), UPPER_LEFT_CORNER('\u250F'), UPPER_RIGHT_CORNER(
+           '\u2513'), MIDDLE_LEFT('\u2523'), MIDDLE_RIGHT('\u252B'), LOWER_LEFT_CORNER(
+           '\u2517'), LOWER_RIGHT_CORNER('\u251B');
 
       private final char code;
 
@@ -371,14 +339,9 @@ public class TestUtils {
 
     private enum ThinFont {
 
-      FACE_LINE('\u2502'),
-      BASE_LINE('\u2500'),
-      UPPER_LEFT_CORNER('\u250C'),
-      UPPER_RIGHT_CORNER('\u2510'),
-      MIDDLE_LEFT('\u252C'),
-      MIDDLE_RIGHT('\u2524'),
-      LOWER_LEFT_CORNER('\u2514'),
-      LOWER_RIGHT_CORNER('\u2518');
+      FACE_LINE('\u2502'), BASE_LINE('\u2500'), UPPER_LEFT_CORNER('\u250C'), UPPER_RIGHT_CORNER(
+           '\u2510'), MIDDLE_LEFT('\u252C'), MIDDLE_RIGHT('\u2524'), LOWER_LEFT_CORNER(
+           '\u2514'), LOWER_RIGHT_CORNER('\u2518');
 
       private final char code;
 
@@ -390,14 +353,9 @@ public class TestUtils {
 
     private enum DoubleFont {
 
-      FACE_LINE('\u2551'),
-      BASE_LINE('\u2550'),
-      UPPER_LEFT_CORNER('\u2554'),
-      UPPER_RIGHT_CORNER('\u2557'),
-      MIDDLE_LEFT('\u2560'),
-      MIDDLE_RIGHT('\u2563'),
-      LOWER_LEFT_CORNER('\u255A'),
-      LOWER_RIGHT_CORNER('\u255D');
+      FACE_LINE('\u2551'), BASE_LINE('\u2550'), UPPER_LEFT_CORNER('\u2554'), UPPER_RIGHT_CORNER(
+           '\u2557'), MIDDLE_LEFT('\u2560'), MIDDLE_RIGHT('\u2563'), LOWER_LEFT_CORNER(
+           '\u255A'), LOWER_RIGHT_CORNER('\u255D');
 
       private final char code;
 
