@@ -68,13 +68,16 @@
             <artifactId>spring-boot-starter-validation</artifactId>
             <version>2.7.3</version>
         </dependency>
-        <!--╔══════════════════════════════╗
-            ║      CACHE DEPENDENCIES      ║
-            ╚══════════════════════════════╝-->
+
 
         <!--╔══════════════════════════════╗
             ║     GENERAL DEPENDENCIES     ║
             ╚══════════════════════════════╝-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <version>2.1.2.RELEASE</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>

@@ -21,7 +21,7 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 @Setter
 @Getter
 @Profile("rs")
-@Import({TransactionManagerConfig.class})
+@Import({TransactionManager.class})
 @Slf4j
 @Configuration
 @EnableReactiveMongoRepositories(basePackages = {"caching.item"})

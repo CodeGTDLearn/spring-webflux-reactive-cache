@@ -7,5 +7,6 @@ public final class ItemRoutes {
   public static final String FIND_ALL = "/findAll";
   public static final String FIND_BY_ID = "/findById/{id}";
   public static final String SAVE = "/save";
+  public static final String SAVE_ALL = "/saveall";
   public static final String UPDATE = "/update";
 }

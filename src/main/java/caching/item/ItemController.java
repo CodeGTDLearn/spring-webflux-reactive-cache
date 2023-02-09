@@ -1,6 +1,7 @@
 package caching.item;
 
 import caching.config.exceptions.ItemExceptionThrower;
+import io.netty.util.internal.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -55,9 +56,17 @@ public class ItemController {
   @PostMapping(SAVE)
   @ResponseStatus(CREATED)
   public Mono<Item> save(@Valid @RequestBody Item item) {
-
-    return itemService.save(item);
+//https://www.youtube.com/watch?v=IqptwwkznCE&list=PL62G310vn6nH5Tgcp5q2a1xCb6CsZJAi7&index=25
+    return
+         itemService
+              .save(item)
+              .doOnNext(returnedItem -> {
+                boolean check = StringUtil.isNullOrEmpty(returnedItem.getName());
+                if (check) itemExceptionsThrower.throwsItemNameIsEmptyException();
+              })
+         ;
   }
+
 
   @Transactional
   @PutMapping(UPDATE)

@@ -3,6 +3,7 @@ package caching.config.exceptions.global;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
 import org.springframework.stereotype.Component;
@@ -28,13 +29,14 @@ import java.util.Map;
 @AllArgsConstructor
 public class GlobalExceptionAttributes extends DefaultErrorAttributes {
 
+  @Autowired
   private GlobalExceptionMessages globalExceptionMessages;
 
   @Override
   public Map<String, Object> getErrorAttributes(ServerRequest request,
                                                 ErrorAttributeOptions options) {
 
-    Map<String, Object> globalAttributes = super.getErrorAttributes(request, options);
+    Map<String, Object> attributes = super.getErrorAttributes(request, options);
 
     // ADICIONA A GLOBAL-EXCEPTION(ResponseStatusException)
     // POIS NAO SE TRATA DE NENHUMA DAS 'CUSTOM-EXCEPTIONS'
@@ -45,7 +47,7 @@ public class GlobalExceptionAttributes extends DefaultErrorAttributes {
 
       // IDEIA GERAL
       // SENDO UMA GLOBAL-EXCEPTION(ResponseStatusException)
-      // adiciona ATTRIBUTES no globalAttributes
+      // adiciona ATTRIBUTES no attributes
 
       // A) DEFAULT-EXCEPTION-ATTRIBUTES EXAMPLE:
             /*
@@ -61,29 +63,29 @@ public class GlobalExceptionAttributes extends DefaultErrorAttributes {
 
       // B) CREATING Parameters based on Default-Message
       // B.1) Fix the Default-Parameter "message"("message": "",) DO NOT USE ":"
-      globalAttributes.put("message", error.getMessage());
-      globalAttributes.put("reason", error.getReason());
+      attributes.put("message", error.getMessage());
+      attributes.put("reason", error.getReason());
 
       // C) ADDING Custom-Parameters in the Default-Parameters
-      globalAttributes.put("Global-Global-Atribute", globalExceptionMessages.getGlobalMessage());
-      globalAttributes.put("Global-Dev-Atribute", globalExceptionMessages.getDeveloperMessage());
-      //      globalAttributes.put("example","example2");
+      attributes.put("Global-Atrib", globalExceptionMessages.getGlobalMessage());
+      attributes.put("Dev-Atrib", globalExceptionMessages.getDeveloperMessage());
+      //      attributes.put("example","example2");
 
       // D) REMOVING Keys/Fields from the Global-Exception-Message
-      //      globalAttributes.remove("path");
-      globalAttributes.remove("error");
-      globalAttributes.remove("message");
-      globalAttributes.remove("timestamp");
-      globalAttributes.remove("requestId");
+      //      attributes.remove("path");
+      attributes.remove("error");
+      // attributes.remove("message");
+      attributes.remove("timestamp");
+      attributes.remove("requestId");
     }
 
     // NAO SENDO UMA GLOBAL-EXCEPTION(ResponseStatusException)
-    // PORTANTO SENDO, UMA CUSTOM-EXCEPTION
+    // PORTANTO SENDO, UMA CUSTOM-EXCEPTION-GLOBAL
     // retorna o valor PADRAO de ATTRIBUTES ou seja,
-    // o globalAttributes "PURO", sem insercao(.put's do IF acima) de qquer atributo
+    // o attributes "PURO", sem insercao(.put's do IF acima) de qquer atributo
     // personalizado
     // OU SEJA, nao se acrescenta os atributos definidos no IF-ACIMA
-    return globalAttributes;
+    return attributes;
   }
 
 }
