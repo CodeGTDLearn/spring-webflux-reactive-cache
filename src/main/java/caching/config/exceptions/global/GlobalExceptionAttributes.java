@@ -33,17 +33,16 @@ public class GlobalExceptionAttributes extends DefaultErrorAttributes {
   private GlobalExceptionMessages globalExceptionMessages;
 
   @Override
-  public Map<String, Object> getErrorAttributes(ServerRequest request,
-                                                ErrorAttributeOptions options) {
+  public Map<String, Object> getErrorAttributes(
+       ServerRequest request,
+       ErrorAttributeOptions options) {
 
     Map<String, Object> attributes = super.getErrorAttributes(request, options);
 
     // ADICIONA A GLOBAL-EXCEPTION(ResponseStatusException)
     // POIS NAO SE TRATA DE NENHUMA DAS 'CUSTOM-EXCEPTIONS'
     Throwable throwable = getError(request);
-    if (throwable instanceof ResponseStatusException) {
-
-      ResponseStatusException error = (ResponseStatusException) throwable;
+    if (throwable instanceof ResponseStatusException error) {
 
       // IDEIA GERAL
       // SENDO UMA GLOBAL-EXCEPTION(ResponseStatusException)

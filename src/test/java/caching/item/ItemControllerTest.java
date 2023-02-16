@@ -253,34 +253,6 @@ public class ItemControllerTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("5 SaveRollback")
-  public void saveRollback() {
-
-    Item item = itemWithoutID().create();
-    item.setName("");
-
-    given()
-         .webTestClient(client)
-         .body(item)
-
-         .when()
-         .post(SAVE)
-
-         .then()
-         .log()
-         .everything()
-
-         .statusCode(NOT_ACCEPTABLE.value())
-
-    //         .body(matchesJsonSchemaInClasspath("contracts/exception.json"))
-    //         .body("developerMensagem" ,is("Item[Fail: Empty Name].notFound"))
-    ;
-
-    dbUtils.countAndExecuteFlux(itemService.findAll(), 2);
-  }
-
-  @Test
-  @EnabledIf(expression = enabledTest, loadContext = true)
   @DisplayName("6 SaveWithID")
   public void saveWithID() {
 
@@ -301,10 +273,38 @@ public class ItemControllerTest {
          .statusCode(CREATED.value())
          .body("name", equalTo(userIsolated.getName()))
          .body("version", is(0))
-         // .body(matchesJsonSchemaInClasspath("contracts/save.json"))
+    // .body(matchesJsonSchemaInClasspath("contracts/save.json"))
     ;
 
     dbUtils.countAndExecuteFlux(itemService.findAll(), 3);
+  }
+
+  @Test
+  @EnabledIf(expression = enabledTest, loadContext = true)
+  @DisplayName("1 Global Exception")
+  public void saveRollback() {
+
+    Item itemNoName = itemWithoutID().create();
+    itemNoName.setName("");
+
+    given()
+         .webTestClient(client)
+         .body(itemNoName)
+
+         .when()
+         .post(SAVE)
+
+         .then()
+         .log()
+         .everything()
+
+         .statusCode(BAD_REQUEST.value())
+
+    //         .body(matchesJsonSchemaInClasspath("contracts/exception.json"))
+    //         .body("developerMensagem" ,is("Item[Fail: Empty Name].notFound"))
+    ;
+
+    dbUtils.countAndExecuteFlux(itemService.findAll(), 2);
   }
 
   @Test
@@ -346,7 +346,6 @@ public class ItemControllerTest {
     //         .body(matchesJsonSchemaInClasspath("contracts/saveOrUpdate.json"))
     ;
   }
-
 
   //  @Test
   //  @EnabledIf(expression = enabledTest, loadContext = true)

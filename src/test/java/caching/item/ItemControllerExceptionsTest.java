@@ -20,14 +20,16 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 
 import static caching.config.ItemRoutes.*;
-import static caching.config.databuilders.ItemBuilder.itemWithID;
 import static caching.config.databuilders.ItemBuilder.itemWithoutID;
-import static caching.config.utils.RestAssureSpecs.*;
+import static caching.config.utils.RestAssureSpecs.requestSpecsSetPath;
+import static caching.config.utils.RestAssureSpecs.responseSpecs;
 import static caching.config.utils.TestUtils.*;
+import static io.restassured.module.webtestclient.RestAssuredWebTestClient.given;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_CLASS;
 
 /*   ╔═══════════════════════════════╗
@@ -85,7 +87,7 @@ public class ItemControllerExceptionsTest {
   final static String enabledTest = "true";
 
   @Autowired
-  WebTestClient mockedWebClient;
+  WebTestClient client;
 
   @Autowired
   TestDbUtils dbUtils;
@@ -150,53 +152,113 @@ public class ItemControllerExceptionsTest {
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("1 Delete")
-  public void delete() {
+  @DisplayName("1 Global Exception Trace")
+  public void globalExceptionTrace() {
 
-    RestAssuredWebTestClient.responseSpecification = noContentTypeAndVoidResponses();
+    Item itemNoName = itemWithoutID().create();
+    itemNoName.setName("");
 
-    dbUtils.countAndExecuteFlux(itemService.findAll(), 2);
-
-    RestAssuredWebTestClient
-
-         .given()
-         .webTestClient(mockedWebClient)
+    given()
+         .webTestClient(client)
+         .body(itemNoName)
 
          .when()
-         .delete(DELETE, item1.get_id())
+         .post(SAVE + "?completeStackTrace=true")
 
          .then()
          .log()
          .everything()
 
-         .statusCode(NO_CONTENT.value());
+         .statusCode(BAD_REQUEST.value())
+         .body("trace",
+               allOf(startsWith("org.springframework.web.bind.support.WebExchangeBindException"),
+                     containsString("Validation failed for argument at index 0")
+               )
+         )
+    //         .body(matchesJsonSchemaInClasspath("contracts/exception.json"))
+    ;
 
-    dbUtils.countAndExecuteFlux(itemService.findAll(), 1);
+    dbUtils.countAndExecuteFlux(itemService.findAll(), 2);
   }
 
   @Test
   @EnabledIf(expression = enabledTest, loadContext = true)
-  @DisplayName("3 FindById")
-  public void findById() {
+  @DisplayName("2 Global Exception No Trace")
+  public void globalExceptionNoTrace() {
 
-    RestAssuredWebTestClient
+    Item itemNoName = itemWithoutID().create();
+    itemNoName.setName("");
 
-         .given()
-         .webTestClient(mockedWebClient)
+    given()
+         .webTestClient(client)
+         .body(itemNoName)
 
          .when()
-         .get(FIND_BY_ID, item1.get_id())
+         .post(SAVE + "?completeStackTrace=false")
 
          .then()
          .log()
          .everything()
 
-         .statusCode(OK.value())
-         .body("_id", equalTo(item1.get_id()))
-         .body("name", equalTo(item1.getName()))
-
-    //         .body(matchesJsonSchemaInClasspath("contracts/project/findbyid.json"))
+         .statusCode(BAD_REQUEST.value())
+         .body("$", not(hasKey("trace")))
+    //         .body(matchesJsonSchemaInClasspath("contracts/exception.json"))
     ;
+
+    dbUtils.countAndExecuteFlux(itemService.findAll(), 2);
+  }
+
+  @Test
+  @EnabledIf(expression = enabledTest, loadContext = true)
+  @DisplayName("3 UpdateOptimFail")
+  public void updateOptimFail() {
+
+    item1.setName("");
+
+    given()
+         .webTestClient(client)
+
+         .body(item1)
+
+         .when()
+         .put(UPDATE)
+
+         .then()
+         .log()
+         .everything()
+
+         .statusCode(BAD_REQUEST.value())
+
+    //         .body(matchesJsonSchemaInClasspath("contracts/saveOrUpdate.json"))
+    ;
+  }
+
+  @Test
+  @EnabledIf(expression = enabledTest, loadContext = true)
+  @DisplayName("4 Save Rollback Exception")
+  public void saveRollback() {
+
+    Item itemNoName = itemWithoutID().create();
+    itemNoName.setName("");
+
+    given()
+         .webTestClient(client)
+         .body(itemNoName)
+
+         .when()
+         .post(SAVE)
+
+         .then()
+         .log()
+         .everything()
+
+         .statusCode(BAD_REQUEST.value())
+
+    //         .body(matchesJsonSchemaInClasspath("contracts/exception.json"))
+    //         .body("developerMensagem" ,is("Item[Fail: Empty Name].notFound"))
+    ;
+
+    dbUtils.countAndExecuteFlux(itemService.findAll(), 2);
   }
 
 

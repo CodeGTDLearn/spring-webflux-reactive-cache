@@ -29,8 +29,7 @@ public class ItemExceptionHandler {
     ItemExceptionAttributes attributes =
          new ItemExceptionAttributes(
               exception.getMessage(),
-              exception.getClass()
-                       .getName(),
+              exception.getClass().getName(),
               NOT_ACCEPTABLE.value(),
               new Date().getTime()
          );
@@ -43,8 +42,7 @@ public class ItemExceptionHandler {
     ItemExceptionAttributes attributes =
          new ItemExceptionAttributes(
               exception.getMessage(),
-              exception.getClass()
-                       .getName(),
+              exception.getClass().getName(),
               NOT_FOUND.value(),
               new Date().getTime()
          );

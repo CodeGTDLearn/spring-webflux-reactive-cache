@@ -17,7 +17,7 @@ import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
 public class ItemNameIsEmptyException extends RuntimeException implements Serializable {
 
   @Serial
-  private static final long serialVersionUID = - 2779773488307514980L;
+  private static final long serialVersionUID = 4667083737220007034L;
 
   public ItemNameIsEmptyException(String message) {
 

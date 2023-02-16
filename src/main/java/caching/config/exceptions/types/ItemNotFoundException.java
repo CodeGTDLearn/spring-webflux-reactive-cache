@@ -2,6 +2,7 @@ package caching.config.exceptions.types;
 
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -15,7 +16,8 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @ResponseStatus(NOT_FOUND)
 public class ItemNotFoundException extends RuntimeException implements Serializable {
 
-  private static final long serialVersionUID = - 8894682964071077679L;
+  @Serial
+  private static final long serialVersionUID = - 1022623318099937816L;
 
   public ItemNotFoundException(String message) {
 

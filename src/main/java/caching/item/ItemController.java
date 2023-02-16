@@ -20,7 +20,7 @@ import static org.springframework.http.HttpStatus.*;
 public class ItemController {
 
   private final ItemService itemService;
-  private final ItemExceptionThrower itemExceptionsThrower;
+  private final ItemExceptionThrower itemExceptionThrower;
 
   @DeleteMapping(DELETE)
   @ResponseStatus(NO_CONTENT)
@@ -29,7 +29,7 @@ public class ItemController {
     return
          itemService
               .findById(id)
-              .switchIfEmpty(itemExceptionsThrower.throwItemNotFoundException())
+              .switchIfEmpty(itemExceptionThrower.throwItemNotFoundException())
               .then(itemService.delete(id))
          ;
   }
@@ -48,21 +48,21 @@ public class ItemController {
     return
          itemService
               .findById(id)
-              .switchIfEmpty(itemExceptionsThrower.throwItemNotFoundException())
+              .switchIfEmpty(itemExceptionThrower.throwItemNotFoundException())
          ;
   }
 
   @Transactional
   @PostMapping(SAVE)
   @ResponseStatus(CREATED)
-  public Mono<Item> save(@Valid @RequestBody Item item) {
+  public Mono<Item> save(@RequestBody @Valid Item item) {
 //https://www.youtube.com/watch?v=IqptwwkznCE&list=PL62G310vn6nH5Tgcp5q2a1xCb6CsZJAi7&index=25
     return
          itemService
               .save(item)
               .doOnNext(returnedItem -> {
                 boolean check = StringUtil.isNullOrEmpty(returnedItem.getName());
-                if (check) itemExceptionsThrower.throwsItemNameIsEmptyException();
+                if (check) itemExceptionThrower.throwsItemNameIsEmptyException();
               })
          ;
   }
@@ -71,11 +71,11 @@ public class ItemController {
   @Transactional
   @PutMapping(UPDATE)
   @ResponseStatus(OK)
-  public Mono<Item> update(@RequestBody Item item) {
+  public Mono<Item> update(@RequestBody @Valid Item item) {
 
     return itemService
          .findById(item.get_id())
-         .switchIfEmpty(itemExceptionsThrower.throwItemNotFoundException())
+         .switchIfEmpty(itemExceptionThrower.throwItemNotFoundException())
          .then(itemService.update(item))
          ;
   }
